@@ -1,5 +1,6 @@
 import argparse
 import os
+import string
 
 from enum import Enum
 
@@ -92,6 +93,11 @@ class Bayespam():
                     for idx in range(len(split_line)):
                         token = split_line[idx]
 
+                        ## Make sure we count only words, also independent of case
+                        ## See function for fulltreatment of word
+                        token = cleanUpWord(token)
+
+
                         if token in self.vocab.keys():
                             # If the token is already in the vocab, retrieve its counter
                             counter = self.vocab[token]
@@ -102,6 +108,7 @@ class Bayespam():
                         # Increment the token's counter by one and store in the vocab
                         counter.increment_counter(message_type)
                         self.vocab[token] = counter
+
             except Exception as e:
                 print("Error while reading message %s: " % msg, e)
                 exit()
@@ -141,6 +148,29 @@ class Bayespam():
             f.close()
         except Exception as e:
             print("An error occurred while writing the vocab to a file: ", e)
+    
+    def cleanUpWord(self, token):
+        ## When the token contains '< > - _ [ ] = @ +' or any number
+        ## we assume the token contains no (useful) words
+        illegalCharacters = r"<>-_[]=@+"
+        if any(elem in token for elem in illegalCharacters):
+            return None
+
+        ##Remove punctuation, e.g. '. , : \n ( ) ! ?'
+        token = token.translate(string.maketrans("",""), string.punctuation)
+
+
+        #Make lowercase
+
+        #eliminate when less than 4 letters
+
+        #return the token
+        return token
+
+
+
+
+
 
 
 
