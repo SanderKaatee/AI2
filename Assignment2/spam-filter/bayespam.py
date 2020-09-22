@@ -27,7 +27,26 @@ class Counter():
             self.counter_spam += 1
 
 class Bayespam():
+    def cleanUpWord(self, token):
+        ## When the token contains '< > - _ [ ] = @ +' or any number
+        ## we assume the token contains no (useful) words
+        illegalCharacters = r"<>-_[]=@+"
+        if any(elem in token for elem in illegalCharacters):
+            return None
 
+        ##Remove punctuation, e.g. '. , : \n ( ) ! ?'
+        table = str.maketrans(dict.fromkeys(string.punctuation))  # OR {key: None for key in string.punctuation}
+        token = token.translate(table).rstrip()
+
+        ##Make lowercase
+        token=token.lower()
+
+        ##eliminate when less than 4 letters
+        if len(token)<4:
+            return None
+        ##return the token
+        return token
+        
     def __init__(self):
         self.regular_list = None
         self.spam_list = None
@@ -95,7 +114,7 @@ class Bayespam():
 
                         ## Make sure we count only words, also independent of case
                         ## See function for fulltreatment of word
-                        token = cleanUpWord(token)
+                        token = self.cleanUpWord(token)
 
 
                         if token in self.vocab.keys():
@@ -148,28 +167,6 @@ class Bayespam():
             f.close()
         except Exception as e:
             print("An error occurred while writing the vocab to a file: ", e)
-    
-    def cleanUpWord(self, token):
-        ## When the token contains '< > - _ [ ] = @ +' or any number
-        ## we assume the token contains no (useful) words
-        illegalCharacters = r"<>-_[]=@+"
-        if any(elem in token for elem in illegalCharacters):
-            return None
-
-        ##Remove punctuation, e.g. '. , : \n ( ) ! ?'
-        token = token.translate(string.maketrans("",""), string.punctuation)
-
-
-        #Make lowercase
-
-        #eliminate when less than 4 letters
-
-        #return the token
-        return token
-
-
-
-
 
 
 
@@ -212,7 +209,7 @@ def main():
     5) Bayes rule must be applied on new messages, followed by argmax classification
     6) Errors must be computed on the test set (FAR = false accept rate (misses), FRR = false reject rate (false alarms))
     7) Improve the code and the performance (speed, accuracy)
-    
+
     Use the same steps to create a class BigramBayespam which implements a classifier using a vocabulary consisting of bigrams
     """
 
