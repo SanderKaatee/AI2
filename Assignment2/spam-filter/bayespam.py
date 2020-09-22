@@ -1,6 +1,5 @@
 import argparse
 import os
-import string
 
 from enum import Enum
 
@@ -35,8 +34,9 @@ class Bayespam():
             return None
 
         ##Remove punctuation, e.g. '. , : \n ( ) ! ?'
-        table = str.maketrans(dict.fromkeys(string.punctuation))  # OR {key: None for key in string.punctuation}
-        token = token.translate(table).rstrip()
+
+        punctuations = '''!()-[]{};:'"\,<>./?@#$%^&*_~\n\t'''
+        token = "".join(u for u in token if u not in punctuations)
 
         ##Make lowercase
         token=token.lower()
@@ -46,7 +46,7 @@ class Bayespam():
             return None
         ##return the token
         return token
-        
+
     def __init__(self):
         self.regular_list = None
         self.spam_list = None
