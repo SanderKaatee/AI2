@@ -114,6 +114,7 @@ class Bayespam():
 
                         ## Make sure we count only words, also independent of case
                         ## See function for fulltreatment of word
+                        ##TODO: remove None
                         token = self.clean_up_word(token)
 
                         if token != None:
@@ -185,13 +186,19 @@ class Bayespam():
             n_words_regular += counter.counter_regular
             n_words_spam += counter.counter_spam
         
+        #TODO: verify? 
         print(n_words_spam)
         print(n_words_regular)
 
+        epsilon = 1
+
+        #TODO (10)
 
 
-
-
+        for word, counter in vocab.items():
+            print("temp")
+            #TODO: (8) & (9) & (10)
+        
 def main():
     # We require the file paths of the training and test sets as input arguments (in that order)
     # The argparse library helps us cleanly parse input arguments
