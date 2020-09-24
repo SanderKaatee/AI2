@@ -26,7 +26,7 @@ class Counter():
             self.counter_spam += 1
 
 class Bayespam():
-    def cleanUpWord(self, token):
+    def clean_up_word(self, token):
         ##Remove punctuation, e.g. '. , : \n ( ) ! ?'
 
         punctuations = '''!()-[]{};:'"\,<>./?@#$%^&*_~\n\t\\x'''
@@ -37,9 +37,6 @@ class Bayespam():
         illegalCharacters = r"<>-_[]=@+0123456789"
         if any(elem in token for elem in illegalCharacters):
             return None
-
-        if any(elem in token for elem in test):
-            print("caught")
 
         ##Make lowercase
         token=token.lower()
@@ -117,7 +114,7 @@ class Bayespam():
 
                         ## Make sure we count only words, also independent of case
                         ## See function for fulltreatment of word
-                        token = self.cleanUpWord(token)
+                        token = self.clean_up_word(token)
 
                         if token != None:
                             if token in self.vocab.keys():
@@ -145,7 +142,7 @@ class Bayespam():
             # repr(word) makes sure that special characters such as \t (tab) and \n (newline) are printed.
             print("%s | In regular: %d | In spam: %d" % (repr(word), counter.counter_regular, counter.counter_spam))
 
-    def write_vocab(self, destination_fp, sort_by_freq=False):
+    def write_vocab(self, destination_fp, sort_by_freq=True):
         """
         Writes the current vocabulary to a separate .txt file for easier inspection.
 
@@ -170,6 +167,27 @@ class Bayespam():
             f.close()
         except Exception as e:
             print("An error occurred while writing the vocab to a file: ", e)
+    
+    def compute_probabilities(self):
+        n_messages_regular = len(self.regular_list)
+        n_messages_spam = len(self.spam_list) 
+        n_messages_total = n_messages_regular + n_messages_spam
+        P_regular = float(n_messages_regular)/n_messages_total
+        P_spam = float(n_messages_spam)/n_messages_total
+        print(P_regular)
+        print(P_spam)
+
+        vocab = self.vocab
+
+        n_words_regular = 0
+        n_words_spam = 0
+        for word, counter in vocab.items():
+            n_words_regular += counter.counter_regular
+            n_words_spam += counter.counter_spam
+        
+        print(n_words_spam)
+        print(n_words_regular)
+
 
 
 
@@ -200,8 +218,12 @@ def main():
     # bayespam.print_vocab()
     bayespam.write_vocab("vocab.txt")
 
+    bayespam.compute_probabilities()
+
     print("N regular messages: ", len(bayespam.regular_list))
     print("N spam messages: ", len(bayespam.spam_list))
+
+    
 
     """
     Now, implement the follow code yourselves:
@@ -215,6 +237,8 @@ def main():
 
     Use the same steps to create a class BigramBayespam which implements a classifier using a vocabulary consisting of bigrams
     """
+
+    
 
 if __name__ == "__main__":
     main()
