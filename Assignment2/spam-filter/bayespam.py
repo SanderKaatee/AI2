@@ -27,16 +27,19 @@ class Counter():
 
 class Bayespam():
     def cleanUpWord(self, token):
+        ##Remove punctuation, e.g. '. , : \n ( ) ! ?'
+
+        punctuations = '''!()-[]{};:'"\,<>./?@#$%^&*_~\n\t\\x'''
+        token = "".join(u for u in token if u not in punctuations)
+
         ## When the token contains '< > - _ [ ] = @ +' or any number
         ## we assume the token contains no (useful) words
-        illegalCharacters = r"<>-_[]=@+"
+        illegalCharacters = r"<>-_[]=@+0123456789"
         if any(elem in token for elem in illegalCharacters):
             return None
 
-        ##Remove punctuation, e.g. '. , : \n ( ) ! ?'
-
-        punctuations = '''!()-[]{};:'"\,<>./?@#$%^&*_~\n\t'''
-        token = "".join(u for u in token if u not in punctuations)
+        if any(elem in token for elem in test):
+            print("caught")
 
         ##Make lowercase
         token=token.lower()
@@ -116,13 +119,13 @@ class Bayespam():
                         ## See function for fulltreatment of word
                         token = self.cleanUpWord(token)
 
-
-                        if token in self.vocab.keys():
-                            # If the token is already in the vocab, retrieve its counter
-                            counter = self.vocab[token]
-                        else:
-                            # Else: initialize a new counter
-                            counter = Counter()
+                        if token != None:
+                            if token in self.vocab.keys():
+                                # If the token is already in the vocab, retrieve its counter
+                                counter = self.vocab[token]
+                            else:
+                                # Else: initialize a new counter
+                                counter = Counter()
 
                         # Increment the token's counter by one and store in the vocab
                         counter.increment_counter(message_type)
@@ -194,7 +197,7 @@ def main():
     # Parse the messages in the spam message directory
     bayespam.read_messages(MessageType.SPAM)
 
-    bayespam.print_vocab()
+    # bayespam.print_vocab()
     bayespam.write_vocab("vocab.txt")
 
     print("N regular messages: ", len(bayespam.regular_list))
