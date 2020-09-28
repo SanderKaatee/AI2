@@ -37,8 +37,8 @@ class Counter():
 
 class Bayespam():
     def clean_up_word(self, token):
-        # Remove punctuation, e.g. '. , : \n ( ) ! ?'
 
+        # Remove punctuation, e.g. '. , : \n ( ) ! ?'
         punctuations = r'''!()-[]{};:'"\,<>./?@#$%^&*_~\n\t\\x'''
         token = "".join(u for u in token if u not in punctuations)
 
@@ -54,6 +54,7 @@ class Bayespam():
         # eliminate when less than 4 letters
         if len(token) < 4:
             return None
+
         # return the token
         return token
 
@@ -151,16 +152,21 @@ class Bayespam():
                                 self.vocab[token] = counter
                         
                         if use_type == UseType.TEST:
+                            # Check whether the word is in our vocab
                             if token != None and token in self.vocab.keys():
+                                # Get the corresponding counter from the vocab
                                 counter = self.vocab[token]
+                                # Sum the probabilities
                                 P_message_spam += counter.conditional_log_prob_spam
                                 P_message_regular += counter.conditional_log_prob_regular
 
                 if use_type == UseType.TEST:
+                    # Classify as spam or regular
                     msg_spam = True
                     if P_message_regular > P_message_spam:
                         msg_spam = False
-
+                    
+                    # Count true/false positives/negatives
                     if msg_spam == True and message_type == MessageType.SPAM:
                         self.confusion_matrix_true_positive += 1
                     if msg_spam == True and message_type == MessageType.REGULAR:
@@ -219,8 +225,6 @@ class Bayespam():
         n_messages_total = n_messages_regular + n_messages_spam
         self.P_regular = math.log(float(n_messages_regular)/n_messages_total)
         self.P_spam = math.log(float(n_messages_spam)/n_messages_total)
-        # print(P_regular)
-        # print(P_spam)
 
         vocab = self.vocab
 
@@ -230,42 +234,32 @@ class Bayespam():
             n_words_regular += counter.counter_regular
             n_words_spam += counter.counter_spam
 
-        # print(n_words_spam)
-
-        # print(n_words_regular)
-
         epsilon = 0.3
 
         for word, counter in vocab.items():
-            # print("-------")
-            # print(word)
-            # print(counter.counter_regular)
-            # print(counter.counter_spam)
-
             if(counter.counter_regular == 0):
                 counter.conditional_log_prob_regular = math.log(
                     epsilon/(n_words_regular+n_words_spam))
-                # print("P(%s|regular) = %f " % (word, counter.conditional_log_prob_regular))
             else:
                 counter.conditional_log_prob_regular = math.log(
                     float(counter.counter_regular)/n_words_regular)
-                # print("P(%s|regular) = %f" %(word,counter.conditional_log_prob_regular))
-
             if(counter.counter_spam == 0):
                 counter.conditional_log_prob_spam = math.log(
                     epsilon/(n_words_regular+n_words_spam))
-                # print("P(%s|spam) = %f" %(word, counter.conditional_log_prob_spam))
             else:
                 counter.conditional_log_prob_spam = math.log(
                     float(counter.counter_spam)/n_words_spam)
-                # print("P(%s|spam) = %f" %( word, counter.conditional_log_prob_spam))
 
     def print_results(self):
         print("true postives:", self.confusion_matrix_true_positive)
         print("true negatives:", self.confusion_matrix_true_negative)
         print("false postives:", self.confusion_matrix_false_positive)
         print("false negatives:", self.confusion_matrix_false_negative)
-        
+        spam_correct = round((self.confusion_matrix_true_positive / (self.confusion_matrix_true_positive + self.confusion_matrix_false_negative)) * 100, 2)
+        regular_correct = round((self.confusion_matrix_true_negative / (self.confusion_matrix_true_negative + self.confusion_matrix_false_positive)) * 100, 2)
+        print("Spam correctly classified: " + str(spam_correct) + "%")
+        print("Regular messages correctly classified: " + str(regular_correct) + "%")
+
 
 
 def main():
@@ -302,8 +296,8 @@ def main():
 
     bayespam.print_results()
 
-    print("N regular messages: ", len(bayespam.regular_list))
-    print("N spam messages: ", len(bayespam.spam_list))
+    # print("N regular messages: ", len(bayespam.regular_list))
+    # print("N spam messages: ", len(bayespam.spam_list))
 
     """
     Now, implement the follow code yourselves:
