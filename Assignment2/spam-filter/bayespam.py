@@ -1,6 +1,6 @@
 import argparse
 import os
-
+import math
 from enum import Enum
 
 class MessageType(Enum):
@@ -163,7 +163,7 @@ class Bayespam():
 
             for word, counter in vocab.items():
                 # repr(word) makes sure that special  characters such as \t (tab) and \n (newline) are printed.
-                f.write("%s | In regular: %d | In spam: %d\n" % (repr(word), counter.counter_regular, counter.counter_spam),)
+                f.write("%s | In regular: %d | In spam: %d | logProbRegular: %f | logProbSpam: %f\n" % (repr(word), counter.counter_regular, counter.counter_spam, counter.conditional_log_prob_regular, counter.conditional_log_prob_spam))
 
             f.close()
         except Exception as e:
@@ -193,14 +193,6 @@ class Bayespam():
         epsilon = 1.0
 
         #TODO (10)
-
-        for word, counter in vocab.items():
-
-            print("-------")
-
-            print(word)
-            print(counter.counter_regular)
-            print(counter.counter_spam)
         for word, counter in vocab.items():
 
             print("-------")
@@ -209,17 +201,17 @@ class Bayespam():
             print(counter.counter_spam)
 
             if(counter.counter_regular==0):
-                counter.conditional_log_prob_regular = epsilon/(n_words_regular+n_words_spam)
+                counter.conditional_log_prob_regular = math.log(epsilon/(n_words_regular+n_words_spam))
                 print("P(%s|regular) = %f " % (word, counter.conditional_log_prob_regular))
             else:
-                counter.conditional_log_prob_regular = float(counter.counter_regular)/n_words_regular
+                counter.conditional_log_prob_regular = math.log(float(counter.counter_regular)/n_words_regular)
                 print("P(%s|regular) = %f" %(word,counter.conditional_log_prob_regular))
 
             if(counter.counter_spam==0):
-                counter.conditional_log_prob_spam = epsilon/(n_words_regular+n_words_spam)
+                counter.conditional_log_prob_spam = math.log(epsilon/(n_words_regular+n_words_spam))
                 print("P(%s|spam) = %f" %(word, counter.conditional_log_prob_spam))
             else:
-                counter.conditional_log_prob_spam = float(counter.counter_spam)/n_words_spam
+                counter.conditional_log_prob_spam = math.log(float(counter.counter_spam)/n_words_spam)
                 print("P(%s|spam) = %f" %( word, counter.conditional_log_prob_spam))
 
 
@@ -251,9 +243,10 @@ def main():
     bayespam.read_messages(MessageType.SPAM)
 
     # bayespam.print_vocab()
+    bayespam.compute_probabilities()
     bayespam.write_vocab("vocab.txt")
 
-    bayespam.compute_probabilities()
+
 
     print("N regular messages: ", len(bayespam.regular_list))
     print("N spam messages: ", len(bayespam.spam_list))
