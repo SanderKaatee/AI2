@@ -213,7 +213,21 @@ class Bayespam():
             vocab = {x[0]: x[1] for x in vocab}
         else:
             vocab = self.vocab
+
+        try:
+            f = open(destination_fp, 'w', encoding="latin1")
+
+            for word, counter in vocab.items():
+                # repr(word) makes sure that special  characters such as \t (tab) and \n (newline) are printed.
+                f.write("%s | In regular: %d | In spam: %d | logProbRegular: %f | logProbSpam: %f\n" % (repr(
+                    word), counter.counter_regular, counter.counter_spam, counter.conditional_log_prob_regular, counter.conditional_log_prob_spam))
+
+            f.close()
+        except Exception as e:
+            print("An error occurred while writing the vocab to a file: ", e)
+    def shorten_vocab(self):
         ##removing bigrams based on frequency
+        vocab = self.vocab
         index_to_delete = []
         for j  in range(int(len(vocab)*mostFreq),len(vocab)):
 
@@ -228,18 +242,6 @@ class Bayespam():
         for key in keys_to_delete:
             if key in vocab:
                 del vocab[key]
-
-        try:
-            f = open(destination_fp, 'w', encoding="latin1")
-
-            for word, counter in vocab.items():
-                # repr(word) makes sure that special  characters such as \t (tab) and \n (newline) are printed.
-                f.write("%s | In regular: %d | In spam: %d | logProbRegular: %f | logProbSpam: %f\n" % (repr(
-                    word), counter.counter_regular, counter.counter_spam, counter.conditional_log_prob_regular, counter.conditional_log_prob_spam))
-
-            f.close()
-        except Exception as e:
-            print("An error occurred while writing the vocab to a file: ", e)
 
     def compute_probabilities(self):
         n_messages_regular = len(self.regular_list)
@@ -257,7 +259,7 @@ class Bayespam():
             n_words_spam += counter.counter_spam
 
         epsilon = 0.3
-
+        print("len ",len(vocab))
         for word, counter in vocab.items():
             if(counter.counter_regular == 0):
                 counter.conditional_log_prob_regular = math.log(
@@ -309,6 +311,7 @@ def main():
     bayespam.read_messages(MessageType.SPAM, UseType.TRAIN)
 
     # bayespam.print_vocab()
+    bayespam.shorten_vocab()
     bayespam.compute_probabilities()
     bayespam.write_vocab("vocab.txt")
 
