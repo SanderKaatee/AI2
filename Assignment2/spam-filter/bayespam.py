@@ -12,7 +12,8 @@ class Counter():
     def __init__(self):
         self.counter_regular = 0
         self.counter_spam = 0
-
+        self.conditional_log_prob_regular = 0
+        self.conditional_log_prob_spam =0
     def increment_counter(self, message_type):
         """
         Increment a word's frequency count by one, depending on whether it occurred in a regular or spam message.
@@ -124,10 +125,9 @@ class Bayespam():
                             else:
                                 # Else: initialize a new counter
                                 counter = Counter()
-
-                        # Increment the token's counter by one and store in the vocab
-                        counter.increment_counter(message_type)
-                        self.vocab[token] = counter
+                            # Increment the token's counter by one and store in the vocab
+                            counter.increment_counter(message_type)
+                            self.vocab[token] = counter
 
             except Exception as e:
                 print("Error while reading message %s: " % msg, e)
@@ -195,23 +195,37 @@ class Bayespam():
         #TODO (10)
 
         for word, counter in vocab.items():
+
+            print("-------")
+
+            print(word)
+            print(counter.counter_regular)
+            print(counter.counter_spam)
+        for word, counter in vocab.items():
+
             print("-------")
             print(word)
-            # print(counter.counter_regular)
-            # print(counter.counter_spam)
+            print(counter.counter_regular)
+            print(counter.counter_spam)
 
             if(counter.counter_regular==0):
-
-                print("P(%s|regular) = %f " % (word, epsilon/(n_words_regular+n_words_spam)))
+                counter.conditional_log_prob_regular = epsilon/(n_words_regular+n_words_spam)
+                print("P(%s|regular) = %f " % (word, counter.conditional_log_prob_regular))
             else:
-                print("P(%s|regular) = %f" %(word, float(counter.counter_regular)/n_words_regular))
+                counter.conditional_log_prob_regular = float(counter.counter_regular)/n_words_regular
+                print("P(%s|regular) = %f" %(word,counter.conditional_log_prob_regular))
 
             if(counter.counter_spam==0):
-                print("P(%s|spam) = %f" %(word, epsilon/(n_words_spam+n_words_regular)))
+                counter.conditional_log_prob_spam = epsilon/(n_words_regular+n_words_spam)
+                print("P(%s|spam) = %f" %(word, counter.conditional_log_prob_spam))
             else:
-                print("P(%s|spam) = %f" %( word, float(counter.counter_spam)/n_words_spam))
+                counter.conditional_log_prob_spam = float(counter.counter_spam)/n_words_spam
+                print("P(%s|spam) = %f" %( word, counter.conditional_log_prob_spam))
+
+
 
             #TODO: (8) & (9) & (10)
+
 
 def main():
     # We require the file paths of the training and test sets as input arguments (in that order)
