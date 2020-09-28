@@ -3,9 +3,16 @@ import os
 import math
 from enum import Enum
 
+
 class MessageType(Enum):
     REGULAR = 1,
     SPAM = 2
+
+
+class UseType(Enum):
+    TEST = 1
+    TRAIN = 2
+
 
 class Counter():
 
@@ -14,6 +21,7 @@ class Counter():
         self.counter_spam = 0
         self.conditional_log_prob_regular = 0
         self.conditional_log_prob_spam = 0
+
     def increment_counter(self, message_type):
         """
         Increment a word's frequency count by one, depending on whether it occurred in a regular or spam message.
@@ -26,26 +34,27 @@ class Counter():
         else:
             self.counter_spam += 1
 
+
 class Bayespam():
     def clean_up_word(self, token):
-        ##Remove punctuation, e.g. '. , : \n ( ) ! ?'
+        # Remove punctuation, e.g. '. , : \n ( ) ! ?'
 
         punctuations = r'''!()-[]{};:'"\,<>./?@#$%^&*_~\n\t\\x'''
         token = "".join(u for u in token if u not in punctuations)
 
-        ## When the token contains '< > - _ [ ] = @ +' or any number
-        ## we assume the token contains no (useful) words
+        # When the token contains '< > - _ [ ] = @ +' or any number
+        # we assume the token contains no (useful) words
         illegalCharacters = r"<>-_[]=@+0123456789"
         if any(elem in token for elem in illegalCharacters):
             return None
 
-        ##Make lowercase
-        token=token.lower()
+        # Make lowercase
+        token = token.lower()
 
-        ##eliminate when less than 4 letters
-        if len(token)<4:
+        # eliminate when less than 4 letters
+        if len(token) < 4:
             return None
-        ##return the token
+        # return the token
         return token
 
     def __init__(self):
@@ -58,7 +67,6 @@ class Bayespam():
         self.confusion_matrix_false_negative = 0
         self.confusion_matrix_true_positive = 0
         self.confusion_matrix_true_negative = 0
-        
 
     def list_dirs(self, path):
         """
@@ -78,7 +86,8 @@ class Bayespam():
         # Create a list of the absolute file paths for each regular message
         # Throws an error if no directory named 'regular' exists in the data folder
         try:
-            self.regular_list = [os.path.join(regular_path, msg) for msg in os.listdir(regular_path)]
+            self.regular_list = [os.path.join(
+                regular_path, msg) for msg in os.listdir(regular_path)]
         except FileNotFoundError:
             print("Error: directory %s should contain a folder named 'regular'." % path)
             exit()
@@ -86,12 +95,13 @@ class Bayespam():
         # Create a list of the absolute file paths for each spam message
         # Throws an error if no directory named 'spam' exists in the data folder
         try:
-            self.spam_list = [os.path.join(spam_path, msg) for msg in os.listdir(spam_path)]
+            self.spam_list = [os.path.join(spam_path, msg)
+                              for msg in os.listdir(spam_path)]
         except FileNotFoundError:
             print("Error: directory %s should contain a folder named 'spam'." % path)
             exit()
 
-    def read_messages(self, message_type):
+    def read_messages(self, message_type, use_type):
         """
         Parse all messages in either the 'regular' or 'spam' directory. Each token is stored in the vocabulary,
         together with a frequency count of its occurrences in both message types.
@@ -104,58 +114,8 @@ class Bayespam():
             message_list = self.spam_list
         else:
             message_list = []
-            print("Error: input parameter message_type should be MessageType.REGULAR or MessageType.SPAM")
-            exit()
-
-        for msg in message_list:
-            try:
-                # Make sure to use latin1 encoding, otherwise it will be unable to read some of the messages
-                f = open(msg, 'r', encoding='latin1')
-
-                # Loop through each line in the message
-                for line in f:
-                    # Split the string on the space character, resulting in a list of tokens
-                    split_line = line.split(" ")
-                    # Loop through the tokens
-                    for idx in range(len(split_line)):
-                        token = split_line[idx]
-
-                        ## Make sure we count only words, also independent of case
-                        ## See function for fulltreatment of word
-                        ##TODO: remove None
-                        token = self.clean_up_word(token)
-
-                        if token != None:
-                            if token in self.vocab.keys():
-                                # If the token is already in the vocab, retrieve its counter
-                                counter = self.vocab[token]
-                            else:
-                                # Else: initialize a new counter
-                                counter = Counter()
-                            # Increment the token's counter by one and store in the vocab
-                            counter.increment_counter(message_type)
-                            self.vocab[token] = counter
-
-            except Exception as e:
-                print("Error while reading message %s: " % msg, e)
-                exit()
-    
-    def read_test_messages(self, message_type):
-        """
-        Parse all messages in either the 'regular' or 'spam' directory. Each token is stored in the vocabulary,
-        together with a frequency count of its occurrences in both message types.
-        :param message_type: The message type to be parsed (MessageType.REGULAR or MessageType.SPAM)
-        :return: None
-        """
-
-
-        if message_type == MessageType.REGULAR:
-            message_list = self.regular_list
-        elif message_type == MessageType.SPAM:
-            message_list = self.spam_list
-        else:
-            message_list = []
-            print("Error: input parameter message_type should be MessageType.REGULAR or MessageType.SPAM")
+            print(
+                "Error: input parameter message_type should be MessageType.REGULAR or MessageType.SPAM")
             exit()
 
         for msg in message_list:
@@ -173,44 +133,46 @@ class Bayespam():
                     for idx in range(len(split_line)):
                         token = split_line[idx]
 
-                        ## Make sure we count only words, also independent of case
-                        ## See function for fulltreatment of word
+                        # Make sure we count only words, also independent of case
+                        # See function for fulltreatment of word
                         token = self.clean_up_word(token)
 
-                        if token != None and token in self.vocab.keys():
-                            
-                            print(token)
-                            counter = self.vocab[token]
-                            print('counter.conditional_log_prob_spam',counter.conditional_log_prob_spam)
-                            print('counter.conditional_log_prob_reg',counter.conditional_log_prob_regular)
-                            P_message_spam += counter.conditional_log_prob_spam
-                            P_message_regular += counter.conditional_log_prob_regular
-                           
-                            print(P_message_spam)
-                            print(P_message_regular)
-            
-                msg_spam = True
-                if P_message_regular > P_message_spam:
-                    msg_spam = False
+                        # Training in this function means adding words to the vocab
+                        if use_type == UseType.TRAIN:
+                            if token != None:
+                                if token in self.vocab.keys():
+                                    # If the token is already in the vocab, retrieve its counter
+                                    counter = self.vocab[token]
+                                else:
+                                    # Else: initialize a new counter
+                                    counter = Counter()
+                                # Increment the token's counter by one and store in the vocab
+                                counter.increment_counter(message_type)
+                                self.vocab[token] = counter
+                        
+                        if use_type == UseType.TEST:
+                            if token != None and token in self.vocab.keys():
+                                counter = self.vocab[token]
+                                P_message_spam += counter.conditional_log_prob_spam
+                                P_message_regular += counter.conditional_log_prob_regular
 
-                if msg_spam == True and message_type == MessageType.SPAM:
-                    self.confusion_matrix_true_positive += 1
-                if msg_spam == True and message_type == MessageType.REGULAR:
-                    self.confusion_matrix_false_positive += 1
-                if msg_spam == False and message_type == MessageType.SPAM:
-                    self.confusion_matrix_false_negative += 1
-                if msg_spam == False and message_type == MessageType.REGULAR:
-                    self.confusion_matrix_true_negative += 1
+                if use_type == UseType.TEST:
+                    msg_spam = True
+                    if P_message_regular > P_message_spam:
+                        msg_spam = False
 
+                    if msg_spam == True and message_type == MessageType.SPAM:
+                        self.confusion_matrix_true_positive += 1
+                    if msg_spam == True and message_type == MessageType.REGULAR:
+                        self.confusion_matrix_false_positive += 1
+                    if msg_spam == False and message_type == MessageType.SPAM:
+                        self.confusion_matrix_false_negative += 1
+                    if msg_spam == False and message_type == MessageType.REGULAR:
+                        self.confusion_matrix_true_negative += 1
 
             except Exception as e:
                 print("Error while reading message %s: " % msg, e)
                 exit()
-        
-        print("true postives:", self.confusion_matrix_true_positive)
-        print("true negatives:", self.confusion_matrix_true_negative)
-        print("false postives:", self.confusion_matrix_false_positive)
-        print("false negatives:", self.confusion_matrix_false_negative)
 
     def print_vocab(self):
         """
@@ -220,7 +182,8 @@ class Bayespam():
         """
         for word, counter in self.vocab.items():
             # repr(word) makes sure that special characters such as \t (tab) and \n (newline) are printed.
-            print("%s | In regular: %d | In spam: %d" % (repr(word), counter.counter_regular, counter.counter_spam))
+            print("%s | In regular: %d | In spam: %d" %
+                  (repr(word), counter.counter_regular, counter.counter_spam))
 
     def write_vocab(self, destination_fp, sort_by_freq=True):
         """
@@ -232,7 +195,8 @@ class Bayespam():
         """
 
         if sort_by_freq:
-            vocab = sorted(self.vocab.items(), key=lambda x: x[1].counter_regular + x[1].counter_spam, reverse=True)
+            vocab = sorted(self.vocab.items(
+            ), key=lambda x: x[1].counter_regular + x[1].counter_spam, reverse=True)
             vocab = {x[0]: x[1] for x in vocab}
         else:
             vocab = self.vocab
@@ -242,7 +206,8 @@ class Bayespam():
 
             for word, counter in vocab.items():
                 # repr(word) makes sure that special  characters such as \t (tab) and \n (newline) are printed.
-                f.write("%s | In regular: %d | In spam: %d | logProbRegular: %f | logProbSpam: %f\n" % (repr(word), counter.counter_regular, counter.counter_spam, counter.conditional_log_prob_regular, counter.conditional_log_prob_spam))
+                f.write("%s | In regular: %d | In spam: %d | logProbRegular: %f | logProbSpam: %f\n" % (repr(
+                    word), counter.counter_regular, counter.counter_spam, counter.conditional_log_prob_regular, counter.conditional_log_prob_spam))
 
             f.close()
         except Exception as e:
@@ -277,19 +242,30 @@ class Bayespam():
             # print(counter.counter_regular)
             # print(counter.counter_spam)
 
-            if(counter.counter_regular==0):
-                counter.conditional_log_prob_regular = math.log(epsilon/(n_words_regular+n_words_spam))
+            if(counter.counter_regular == 0):
+                counter.conditional_log_prob_regular = math.log(
+                    epsilon/(n_words_regular+n_words_spam))
                 # print("P(%s|regular) = %f " % (word, counter.conditional_log_prob_regular))
             else:
-                counter.conditional_log_prob_regular = math.log(float(counter.counter_regular)/n_words_regular)
+                counter.conditional_log_prob_regular = math.log(
+                    float(counter.counter_regular)/n_words_regular)
                 # print("P(%s|regular) = %f" %(word,counter.conditional_log_prob_regular))
 
-            if(counter.counter_spam==0):
-                counter.conditional_log_prob_spam = math.log(epsilon/(n_words_regular+n_words_spam))
+            if(counter.counter_spam == 0):
+                counter.conditional_log_prob_spam = math.log(
+                    epsilon/(n_words_regular+n_words_spam))
                 # print("P(%s|spam) = %f" %(word, counter.conditional_log_prob_spam))
             else:
-                counter.conditional_log_prob_spam = math.log(float(counter.counter_spam)/n_words_spam)
+                counter.conditional_log_prob_spam = math.log(
+                    float(counter.counter_spam)/n_words_spam)
                 # print("P(%s|spam) = %f" %( word, counter.conditional_log_prob_spam))
+
+    def print_results(self):
+        print("true postives:", self.confusion_matrix_true_positive)
+        print("true negatives:", self.confusion_matrix_true_negative)
+        print("false postives:", self.confusion_matrix_false_positive)
+        print("false negatives:", self.confusion_matrix_false_negative)
+        
 
 
 def main():
@@ -312,23 +288,22 @@ def main():
     bayespam.list_dirs(train_path)
 
     # Parse the messages in the regular message directory
-    bayespam.read_messages(MessageType.REGULAR)
+    bayespam.read_messages(MessageType.REGULAR, UseType.TRAIN)
     # Parse the messages in the spam message directory
-    bayespam.read_messages(MessageType.SPAM)
+    bayespam.read_messages(MessageType.SPAM, UseType.TRAIN)
 
     # bayespam.print_vocab()
     bayespam.compute_probabilities()
     bayespam.write_vocab("vocab.txt")
 
     bayespam.list_dirs(test_path)
-    bayespam.read_test_messages(MessageType.REGULAR)
-    bayespam.read_test_messages(MessageType.SPAM)
+    bayespam.read_messages(MessageType.REGULAR, UseType.TEST)
+    bayespam.read_messages(MessageType.SPAM, UseType.TEST)
 
+    bayespam.print_results()
 
     print("N regular messages: ", len(bayespam.regular_list))
     print("N spam messages: ", len(bayespam.spam_list))
-
-
 
     """
     Now, implement the follow code yourselves:
@@ -342,7 +317,6 @@ def main():
 
     Use the same steps to create a class BigramBayespam which implements a classifier using a vocabulary consisting of bigrams
     """
-
 
 
 if __name__ == "__main__":
