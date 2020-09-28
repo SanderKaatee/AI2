@@ -3,8 +3,10 @@ import os
 import math
 from enum import Enum
 
+# when a comment shows a number (x), it refers to formula x in the assignment description
 
 mostFreq = 0.5 ## adding the only top 50 percent of the most frequent words
+
 
 class MessageType(Enum):
     REGULAR = 1,
@@ -53,7 +55,7 @@ class Bayespam():
         # Make lowercase
         token = token.lower()
 
-        # eliminate when less than 4 letters
+        ## eliminate when less than 2 letters
         if len(token) < 2:
             return None
 
@@ -64,8 +66,12 @@ class Bayespam():
         self.regular_list = None
         self.spam_list = None
         self.vocab = {}
+
+        # Counters for the proportion of regular (4) and spam (5) messages
         self.P_regular = 0
         self.P_spam = 0
+
+        # Counters for the numbers of false/true positives/negatives
         self.confusion_matrix_false_positive = 0
         self.confusion_matrix_false_negative = 0
         self.confusion_matrix_true_positive = 0
@@ -105,6 +111,7 @@ class Bayespam():
             exit()
 
     def read_messages(self, message_type, use_type):
+        # This function does part of the training or all of the testing, depending on the variable use_type
         """
         Parse all messages in either the 'regular' or 'spam' directory. Each token is stored in the vocabulary,
         together with a frequency count of its occurrences in both message types.
@@ -122,6 +129,7 @@ class Bayespam():
             exit()
 
         for msg in message_list:
+            # Counters for the proportion of spam (19) / regular (20) messages 
             P_message_spam = self.P_spam
             P_message_regular = self.P_regular
             try:
@@ -134,14 +142,12 @@ class Bayespam():
                     split_line = line.split(" ")
                     # Loop through the tokens
                     for idx in range(len(split_line)):
+                        token = split_line[idx]
 
-                        # Make sure we count only words, also independent of case
-                        # See function for fulltreatment of word
-                        ##Creating bigrams
-                        ##The minimum size of a bigram word in a bigram is 2 and can be adjusted in clean_up_word
+                        ## Creating bigrams
+                        ## The minimum size of a bigram word in a bigram is 2 and can be adjusted in clean_up_word
                         try:
                             token = self.clean_up_word(split_line[idx]) + " " + self.clean_up_word(split_line[idx+1])
-
                         except Exception as e:
                             continue
 
@@ -157,7 +163,7 @@ class Bayespam():
                                 # Increment the token's counter by one and store in the vocab
                                 counter.increment_counter(message_type)
                                 self.vocab[token] = counter
-
+                        
                         if use_type == UseType.TEST:
                             # Check whether the word is in our vocab
                             if token != None and token in self.vocab.keys():
@@ -172,7 +178,7 @@ class Bayespam():
                     msg_spam = True
                     if P_message_regular > P_message_spam:
                         msg_spam = False
-
+                    
                     # Count true/false positives/negatives
                     if msg_spam == True and message_type == MessageType.SPAM:
                         self.confusion_matrix_true_positive += 1
@@ -225,8 +231,9 @@ class Bayespam():
             f.close()
         except Exception as e:
             print("An error occurred while writing the vocab to a file: ", e)
+    
     def shorten_vocab(self):
-        ##removing bigrams based on frequency
+        ## removing bigrams based on frequency
         vocab = self.vocab
         index_to_delete = []
         for j  in range(int(len(vocab)*mostFreq),len(vocab)):
@@ -244,22 +251,30 @@ class Bayespam():
                 del vocab[key]
 
     def compute_probabilities(self):
+        # (1)
         n_messages_regular = len(self.regular_list)
+        # (2)
         n_messages_spam = len(self.spam_list)
+        # (3)
         n_messages_total = n_messages_regular + n_messages_spam
+        # (4)
         self.P_regular = math.log(float(n_messages_regular)/n_messages_total)
+        # (5)
         self.P_spam = math.log(float(n_messages_spam)/n_messages_total)
 
         vocab = self.vocab
 
+        # The rest of the function does what section 2.2 describes
+        # We hope that the code is quite readable due to the variable names
         n_words_regular = 0.0
         n_words_spam = 0.0
         for word, counter in vocab.items():
             n_words_regular += counter.counter_regular
             n_words_spam += counter.counter_spam
 
+        # A lower epsilon gives better results, but no improvement below 0.3
         epsilon = 0.3
-        print("len ",len(vocab))
+
         for word, counter in vocab.items():
             if(counter.counter_regular == 0):
                 counter.conditional_log_prob_regular = math.log(
@@ -275,6 +290,7 @@ class Bayespam():
                     float(counter.counter_spam)/n_words_spam)
 
     def print_results(self):
+        # This function prints the confusion matrix and proportions of correct classification
         print("true postives:", self.confusion_matrix_true_positive)
         print("true negatives:", self.confusion_matrix_true_negative)
         print("false postives:", self.confusion_matrix_false_positive)
@@ -312,8 +328,9 @@ def main():
 
     # bayespam.print_vocab()
     bayespam.shorten_vocab()
-    bayespam.compute_probabilities()
     bayespam.write_vocab("vocab.txt")
+    bayespam.compute_probabilities()
+    
 
     bayespam.list_dirs(test_path)
     bayespam.read_messages(MessageType.REGULAR, UseType.TEST)

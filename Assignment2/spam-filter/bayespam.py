@@ -108,7 +108,7 @@ class Bayespam():
             exit()
 
     def read_messages(self, message_type, use_type):
-        ##This function does part of the training or all of the testing, depending on the variable use_type
+        ## This function does part of the training or all of the testing, depending on the variable use_type
         """
         Parse all messages in either the 'regular' or 'spam' directory. Each token is stored in the vocabulary,
         together with a frequency count of its occurrences in both message types.
