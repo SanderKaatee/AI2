@@ -247,6 +247,10 @@ def main():
     bayespam.write_vocab("vocab.txt")
 
 
+    bayespam.list_dirs(test_path)
+    bayespam.read__test_messages(MessageType.REGULAR)
+    bayespam.read__test_messages(MessageType.SPAM)
+
 
     print("N regular messages: ", len(bayespam.regular_list))
     print("N spam messages: ", len(bayespam.spam_list))
