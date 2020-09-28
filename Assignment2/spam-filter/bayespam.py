@@ -168,10 +168,10 @@ class Bayespam():
             f.close()
         except Exception as e:
             print("An error occurred while writing the vocab to a file: ", e)
-    
+
     def compute_probabilities(self):
         n_messages_regular = len(self.regular_list)
-        n_messages_spam = len(self.spam_list) 
+        n_messages_spam = len(self.spam_list)
         n_messages_total = n_messages_regular + n_messages_spam
         P_regular = float(n_messages_regular)/n_messages_total
         P_spam = float(n_messages_spam)/n_messages_total
@@ -180,25 +180,39 @@ class Bayespam():
 
         vocab = self.vocab
 
-        n_words_regular = 0
-        n_words_spam = 0
+        n_words_regular = 0.0
+        n_words_spam = 0.0
         for word, counter in vocab.items():
             n_words_regular += counter.counter_regular
             n_words_spam += counter.counter_spam
-        
-        #TODO: verify? 
+
+        #TODO: verify?
         print(n_words_spam)
         print(n_words_regular)
 
-        epsilon = 1
+        epsilon = 1.0
 
         #TODO (10)
 
-
         for word, counter in vocab.items():
-            print("temp")
+            print("-------")
+            print(word)
+            # print(counter.counter_regular)
+            # print(counter.counter_spam)
+
+            if(counter.counter_regular==0):
+
+                print("P(%s|regular) = %f " % (word, epsilon/(n_words_regular+n_words_spam)))
+            else:
+                print("P(%s|regular) = %f" %(word, float(counter.counter_regular)/n_words_regular))
+
+            if(counter.counter_spam==0):
+                print("P(%s|spam) = %f" %(word, epsilon/(n_words_spam+n_words_regular)))
+            else:
+                print("P(%s|spam) = %f" %( word, float(counter.counter_spam)/n_words_spam))
+
             #TODO: (8) & (9) & (10)
-        
+
 def main():
     # We require the file paths of the training and test sets as input arguments (in that order)
     # The argparse library helps us cleanly parse input arguments
@@ -230,7 +244,7 @@ def main():
     print("N regular messages: ", len(bayespam.regular_list))
     print("N spam messages: ", len(bayespam.spam_list))
 
-    
+
 
     """
     Now, implement the follow code yourselves:
@@ -245,7 +259,7 @@ def main():
     Use the same steps to create a class BigramBayespam which implements a classifier using a vocabulary consisting of bigrams
     """
 
-    
+
 
 if __name__ == "__main__":
     main()
