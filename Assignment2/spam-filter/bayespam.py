@@ -3,6 +3,7 @@ import os
 import math
 from enum import Enum
 
+## when a comment shows a number (x), it refers to formula x in the assignment description
 
 class MessageType(Enum):
     REGULAR = 1,
@@ -38,32 +39,36 @@ class Counter():
 class Bayespam():
     def clean_up_word(self, token):
 
-        # Remove punctuation, e.g. '. , : \n ( ) ! ?'
+        ## Remove punctuation, e.g. '. , : \n ( ) ! ?'
         punctuations = r'''!()-[]{};:'"\,<>./?@#$%^&*_~\n\t\\x'''
         token = "".join(u for u in token if u not in punctuations)
 
-        # When the token contains '< > - _ [ ] = @ +' or any number
-        # we assume the token contains no (useful) words
+        ## When the token contains '< > - _ [ ] = @ +' or any number
+        ## we assume the token contains no (useful) words
         illegalCharacters = r"<>-_[]=@+0123456789"
         if any(elem in token for elem in illegalCharacters):
             return None
 
-        # Make lowercase
+        ## Make lowercase
         token = token.lower()
 
-        # eliminate when less than 4 letters
+        ## eliminate when less than 4 letters
         if len(token) < 4:
             return None
 
-        # return the token
+        ## return the token
         return token
 
     def __init__(self):
         self.regular_list = None
         self.spam_list = None
         self.vocab = {}
+
+        ## Counters for the proportion of regular (4) and spam (5) messages
         self.P_regular = 0
         self.P_spam = 0
+
+        ## Counters for the numbers of false/true positives/negatives
         self.confusion_matrix_false_positive = 0
         self.confusion_matrix_false_negative = 0
         self.confusion_matrix_true_positive = 0
@@ -103,6 +108,7 @@ class Bayespam():
             exit()
 
     def read_messages(self, message_type, use_type):
+        ##This function does part of the training or all of the testing, depending on the variable use_type
         """
         Parse all messages in either the 'regular' or 'spam' directory. Each token is stored in the vocabulary,
         together with a frequency count of its occurrences in both message types.
@@ -120,6 +126,7 @@ class Bayespam():
             exit()
 
         for msg in message_list:
+            ## Counters for the proportion of spam (19) / regular (20) messages 
             P_message_spam = self.P_spam
             P_message_regular = self.P_regular
             try:
@@ -134,39 +141,39 @@ class Bayespam():
                     for idx in range(len(split_line)):
                         token = split_line[idx]
 
-                        # Make sure we count only words, also independent of case
-                        # See function for fulltreatment of word
+                        ## Make sure we count only words, also independent of case
+                        ## See function for the full treatment of the words
                         token = self.clean_up_word(token)
 
-                        # Training in this function means adding words to the vocab
+                        ## Training in this function means adding words to the vocab
                         if use_type == UseType.TRAIN:
                             if token != None:
                                 if token in self.vocab.keys():
-                                    # If the token is already in the vocab, retrieve its counter
+                                    ## If the token is already in the vocab, retrieve its counter
                                     counter = self.vocab[token]
                                 else:
-                                    # Else: initialize a new counter
+                                    ## Else: initialize a new counter
                                     counter = Counter()
-                                # Increment the token's counter by one and store in the vocab
+                                ## Increment the token's counter by one and store in the vocab
                                 counter.increment_counter(message_type)
                                 self.vocab[token] = counter
                         
                         if use_type == UseType.TEST:
-                            # Check whether the word is in our vocab
+                            ## Check whether the word is in our vocab
                             if token != None and token in self.vocab.keys():
-                                # Get the corresponding counter from the vocab
+                                ## Get the corresponding counter from the vocab
                                 counter = self.vocab[token]
-                                # Sum the probabilities
+                                ## Sum the probabilities
                                 P_message_spam += counter.conditional_log_prob_spam
                                 P_message_regular += counter.conditional_log_prob_regular
 
                 if use_type == UseType.TEST:
-                    # Classify as spam or regular
+                    ## Classify as spam or regular
                     msg_spam = True
                     if P_message_regular > P_message_spam:
                         msg_spam = False
                     
-                    # Count true/false positives/negatives
+                    ## Count true/false positives/negatives
                     if msg_spam == True and message_type == MessageType.SPAM:
                         self.confusion_matrix_true_positive += 1
                     if msg_spam == True and message_type == MessageType.REGULAR:
@@ -220,20 +227,28 @@ class Bayespam():
             print("An error occurred while writing the vocab to a file: ", e)
 
     def compute_probabilities(self):
+        ## (1)
         n_messages_regular = len(self.regular_list)
+        ## (2)
         n_messages_spam = len(self.spam_list)
+        ## (3)
         n_messages_total = n_messages_regular + n_messages_spam
+        ## (4)
         self.P_regular = math.log(float(n_messages_regular)/n_messages_total)
+        ## (5)
         self.P_spam = math.log(float(n_messages_spam)/n_messages_total)
 
         vocab = self.vocab
 
+        ## The rest of the function does what section 2.2 describes
+        ## We hope that the code is quite readable due to the variable names
         n_words_regular = 0.0
         n_words_spam = 0.0
         for word, counter in vocab.items():
             n_words_regular += counter.counter_regular
             n_words_spam += counter.counter_spam
 
+        ##A lower epsilon gives better results, but no improvement below 0.3
         epsilon = 0.3
 
         for word, counter in vocab.items():
@@ -251,6 +266,7 @@ class Bayespam():
                     float(counter.counter_spam)/n_words_spam)
 
     def print_results(self):
+        ## This function prints the confusion matrix and proportions of correct classification
         print("true postives:", self.confusion_matrix_true_positive)
         print("true negatives:", self.confusion_matrix_true_negative)
         print("false postives:", self.confusion_matrix_false_positive)
