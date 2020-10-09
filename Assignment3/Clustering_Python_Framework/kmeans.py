@@ -1,5 +1,5 @@
 """kmeans.py"""
-
+import random
 class Cluster:
     """This class represents the clusters, it contains the
     prototype (the mean of all it's members) and memberlists with the
@@ -13,6 +13,8 @@ class Cluster:
 
 
 class KMeans:
+
+
     def __init__(self, k, traindata, testdata, dim):
         self.k = k
         self.traindata = traindata
@@ -32,6 +34,9 @@ class KMeans:
     def train(self):
         # implement k-means algorithm here:
         # Step 1: Select an initial random partioning with k clusters
+        for cluster in self.clusters:
+            cluster.prototype = [random.uniform(0, 1) for _ in range(self.dim)]
+
         # Step 2: Generate a new partition by assigning each datapoint to its closest cluster center
         # Step 3: recalculate cluster centers
         # Step 4: repeat until clustermembership stabilizes
