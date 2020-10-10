@@ -14,6 +14,18 @@ class Cluster:
 
 
 class KMeans:
+
+    def primitives_change(self, clusters):
+        for cluster in clusters:
+            print("cluster.previous_members" )
+            print(cluster.previous_members )
+            print("cluster.current_members" )
+            print(cluster.current_members )
+            if cluster.previous_members == cluster.current_members:
+                return True
+        return False
+        pass
+
     def euclidean_distance(self, X,P):
         ## TODO COMMENTS
         for x in X:
@@ -72,14 +84,24 @@ class KMeans:
         # Step 1: Select an initial random partioning with k clusters
         for cluster in self.clusters:
             cluster.prototype = [random.uniform(0, 1) for _ in range(self.dim)]
-        # Step 2: Generate a new partition by assigning each datapoint to its closest cluster center
-        ## comment
-        self.generate_partition(self.traindata, self.clusters)
+            iteration = 0
+        while True:
 
-        # Step 3: recalculate cluster  centers
-        self.recalculate_cluster_centers(self.traindata, self.clusters)
-        # Step 4: repeat until clustermembership stabilizes
-        pass
+            # Step 2: Generate a new partition by assigning each datapoint to its closest cluster center
+            ## comment
+            self.generate_partition(self.traindata, self.clusters)
+
+            # Step 3: recalculate cluster  centers
+            self.recalculate_cluster_centers(self.traindata, self.clusters)
+            # Step 4: repeat until clustermembership stabilizes
+            if(self.primitives_change(self.clusters)):
+                break;
+            iteration=iteration+1
+            print(iteration)
+            if(iteration==100):
+                print("...and a hundred")
+                break;
+            pass
 
     def test(self):
         # iterate along all clients. Assumption: the same clients are in the same order as in the testData
