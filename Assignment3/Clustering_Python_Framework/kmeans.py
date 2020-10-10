@@ -17,43 +17,45 @@ class KMeans:
 
     def primitives_change(self, clusters):
         for cluster in clusters:
-            print("cluster.previous_members" )
-            print(cluster.previous_members )
-            print("cluster.current_members" )
-            print(cluster.current_members )
-            if cluster.previous_members == cluster.current_members:
-                return True
+            ### print("cluster.previous_members" )
+            ### print(cluster.previous_members )
+            ### print("cluster.current_members" )
+            ### print(cluster.current_members )
+            if len(cluster.previous_members.difference(cluster.current_members)) == 0:
+                    print("RETURN TRUE")
+                    return True
         return False
-        pass
 
-    def euclidean_distance(self, X,P):
-        ## TODO COMMENTS
-        for x in X:
-            for p in P:
-                euc_dist = (x-p)*(x-p)
-        return math.sqrt(euc_dist)
 
     def generate_partition(self, client, clusters):
-        ## TODO COMMENTS:
+        ## Function to generate the partition, aka step 2 of the assignment
         for cluster in clusters:
+            ## Make sure our clusters are empty while making sure we know what the previous
+            ## members were
             cluster.previous_members = cluster.current_members
             cluster.current_members.clear()
 
+        ## For each client we check which is the closest cluster and then add that client to that cluster
         for client_id in range(len(client)):
-            minimum = 201
+            ## Euclidian distance will be at most 1
+            minimum = 1
             closest_cluster = None
             for cluster in clusters:
+                ## The prototype is the cluster center
                 euc_dist = self.euclidean_distance(client[client_id],cluster.prototype)
                 if (euc_dist<minimum):
+                    ## Find closest cluster
                     minimum=euc_dist
                     closest_cluster=cluster
             closest_cluster.current_members.add(client_id)
 
     def recalculate_cluster_centers(self,client, clusters):
+        ## Function to (re)calculate the cluster center, aka step 3 of the assignment
+
         for cluster in clusters:
             number_of_members=len(cluster.current_members)
 
-            new_cluster_center =  [0.0 for _ in range(self.dim)]
+            new_cluster_center = [0.0 for _ in range(self.dim)]
             for client_id in cluster.current_members:
                 for id in range(self.dim):
                     new_cluster_center[id] = new_cluster_center[id] + client[client_id][id]
@@ -85,23 +87,24 @@ class KMeans:
         # Step 1: Select an initial random partioning with k clusters
         for cluster in self.clusters:
             cluster.prototype = [random.uniform(0, 1) for _ in range(self.dim)]
-            iteration = 0
+        
+        iteration = 0
+        
         while True:
-
             # Step 2: Generate a new partition by assigning each datapoint to its closest cluster center
-            ## comment
             self.generate_partition(self.traindata, self.clusters)
 
             # Step 3: recalculate cluster  centers
             self.recalculate_cluster_centers(self.traindata, self.clusters)
+
             # Step 4: repeat until clustermembership stabilizes
             if(self.primitives_change(self.clusters)):
-                break;
+                break
             iteration=iteration+1
             print(iteration)
             if(iteration==100):
                 print("...and a hundred")
-                break;
+                break
             pass
 
     def test(self):
