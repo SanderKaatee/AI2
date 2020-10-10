@@ -1,5 +1,6 @@
 """kmeans.py"""
 import random
+import math
 class Cluster:
     """This class represents the clusters, it contains the
     prototype (the mean of all it's members) and memberlists with the
@@ -13,6 +14,11 @@ class Cluster:
 
 
 class KMeans:
+    def euclidean_distance(self, X,P):
+        for x in X:
+            for p in P:
+                euc_dist = (x-p)*(x-p)
+        return math.sqrt(euc_dist)
 
 
     def __init__(self, k, traindata, testdata, dim):
@@ -36,9 +42,28 @@ class KMeans:
         # Step 1: Select an initial random partioning with k clusters
         for cluster in self.clusters:
             cluster.prototype = [random.uniform(0, 1) for _ in range(self.dim)]
-
         # Step 2: Generate a new partition by assigning each datapoint to its closest cluster center
-        # Step 3: recalculate cluster centers
+        ## comment
+        for client in self.traindata:
+            minimum = 201
+            closest_cluster = None
+            for cluster in self.clusters:
+                cluster.previous_members = cluster.current_members
+                if (self.euclidean_distance(client,cluster.prototype)<minimum):
+                    minimum=self.euclidean_distance(client,cluster.prototype)
+                    closest_cluster=cluster
+            #closest_cluster.current_members.clear()
+            print("-------")
+            print('client')
+            print(client)
+
+            closest_cluster.current_members.update(client)
+
+            print('closest_cluster.current_members')
+            print(closest_cluster.current_members)
+            # print('closest_cluster.current_members[0]')
+            # print(closest_cluster.current_members)
+        # Step 3: recalculate cluster  centers
         # Step 4: repeat until clustermembership stabilizes
         pass
 
