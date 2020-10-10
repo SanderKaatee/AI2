@@ -17,34 +17,32 @@ class KMeans:
 
     def primitives_change(self, clusters):
         for cluster in clusters:
-            print("cluster.previous_members" )
-            print(cluster.previous_members )
-            print("cluster.current_members" )
-            print(cluster.current_members )
-            if cluster.previous_members == cluster.current_members:
+
+            if len( cluster.previous_members.difference(cluster.current_members)) == 0:
                 return True
         return False
-        pass
+
 
     def euclidean_distance(self, X,P):
         ## TODO COMMENTS
-        for x in X:
-            for p in P:
-                euc_dist = (x-p)*(x-p)
+        euc_dist = 0
+        for id in range(self.dim):
+                euc_dist = euc_dist + (X[id]-P[id])*(X[id]-P[id])
         return math.sqrt(euc_dist)
 
-    def generate_partition(self, client, clusters):
+    def generate_partition(self, clients, clusters):
         ## TODO COMMENTS:
         for cluster in clusters:
             cluster.previous_members = cluster.current_members
             cluster.current_members.clear()
 
-        for client_id in range(len(client)):
+        for client_id in range(len(clients)):
             minimum = 201
             closest_cluster = None
             for cluster in clusters:
-                if (self.euclidean_distance(client[client_id],cluster.prototype)<minimum):
-                    minimum=self.euclidean_distance(client[client_id],cluster.prototype)
+                euc_dist = self.euclidean_distance(clients[client_id],cluster.prototype)
+                if euc_dist<minimum:
+                    minimum=euc_dist
                     closest_cluster=cluster
             closest_cluster.current_members.add(client_id)
 
@@ -84,7 +82,7 @@ class KMeans:
         # Step 1: Select an initial random partioning with k clusters
         for cluster in self.clusters:
             cluster.prototype = [random.uniform(0, 1) for _ in range(self.dim)]
-            iteration = 0
+        iteration = 0
         while True:
 
             # Step 2: Generate a new partition by assigning each datapoint to its closest cluster center
@@ -94,10 +92,12 @@ class KMeans:
             # Step 3: recalculate cluster  centers
             self.recalculate_cluster_centers(self.traindata, self.clusters)
             # Step 4: repeat until clustermembership stabilizes
+
+            print(iteration)
             if(self.primitives_change(self.clusters)):
                 break;
+
             iteration=iteration+1
-            print(iteration)
             if(iteration==100):
                 print("...and a hundred")
                 break;
