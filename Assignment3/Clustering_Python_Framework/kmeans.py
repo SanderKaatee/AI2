@@ -26,6 +26,12 @@ class KMeans:
                     return True
         return False
 
+    def euclidean_distance(self, X,P):
+        ## TODO COMMENTS
+        euc_dist = 0
+        for id in range(self.dim):
+                euc_dist = euc_dist + (X[id]-P[id])*(X[id]-P[id])
+        return math.sqrt(euc_dist)
 
     def generate_partition(self, client, clusters):
         ## Function to generate the partition, aka step 2 of the assignment
@@ -98,10 +104,11 @@ class KMeans:
             self.recalculate_cluster_centers(self.traindata, self.clusters)
 
             # Step 4: repeat until clustermembership stabilizes
+
+            print(iteration)
             if(self.primitives_change(self.clusters)):
                 break
             iteration=iteration+1
-            print(iteration)
             if(iteration==100):
                 print("...and a hundred")
                 break
