@@ -21,13 +21,14 @@ class KMeans:
                 euc_dist = (x-p)*(x-p)
         return math.sqrt(euc_dist)
     
-    def generate_partition(self,client, clusters):
+    def generate_partition(self, client, clusters):
         ## TODO COMMENTS:
         for client_id in range(len(client)):
             minimum = 201
             closest_cluster = None
             for cluster in clusters:
                 cluster.previous_members = cluster.current_members
+                cluster.current_members.clear()
                 if (self.euclidean_distance(client[client_id],cluster.prototype)<minimum):
                     ### print('minimum')
                     ### print(minimum)
