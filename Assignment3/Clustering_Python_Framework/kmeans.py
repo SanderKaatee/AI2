@@ -19,6 +19,8 @@ class KMeans:
         for cluster in clusters:
 
             if len( cluster.previous_members.difference(cluster.current_members)) == 0:
+                print( cluster.previous_members)
+                print(cluster.current_members)
                 return True
         return False
 
