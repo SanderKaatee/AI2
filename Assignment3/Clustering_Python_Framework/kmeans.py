@@ -23,12 +23,14 @@ class KMeans:
     
     def generate_partition(self, client, clusters):
         ## TODO COMMENTS:
+        for cluster in clusters:
+            cluster.previous_members = cluster.current_members
+            cluster.current_members.clear()
+
         for client_id in range(len(client)):
             minimum = 201
             closest_cluster = None
             for cluster in clusters:
-                cluster.previous_members = cluster.current_members
-                cluster.current_members.clear()
                 if (self.euclidean_distance(client[client_id],cluster.prototype)<minimum):
                     ### print('minimum')
                     ### print(minimum)
