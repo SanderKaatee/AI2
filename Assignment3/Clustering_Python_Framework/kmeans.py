@@ -31,8 +31,9 @@ class KMeans:
             minimum = 201
             closest_cluster = None
             for cluster in clusters:
-                if (self.euclidean_distance(client[client_id],cluster.prototype)<minimum):
-                    minimum=self.euclidean_distance(client[client_id],cluster.prototype)
+                euc_dist = self.euclidean_distance(client[client_id],cluster.prototype)
+                if (euc_dist<minimum):
+                    minimum=euc_dist
                     closest_cluster=cluster
             closest_cluster.current_members.add(client_id)
 
@@ -43,7 +44,7 @@ class KMeans:
             new_cluster_center =  [0.0 for _ in range(self.dim)]
             for client_id in cluster.current_members:
                 for id in range(self.dim):
-                    new_cluster_center[id] = new_cluster_center[id] +  client[client_id][id]
+                    new_cluster_center[id] = new_cluster_center[id] + client[client_id][id]
             if (number_of_members != 0):
                 for index in range(len(new_cluster_center)):
                     new_cluster_center[index] = new_cluster_center[index]/number_of_members
