@@ -44,26 +44,38 @@ class KMeans:
             cluster.prototype = [random.uniform(0, 1) for _ in range(self.dim)]
         # Step 2: Generate a new partition by assigning each datapoint to its closest cluster center
         ## comment
-        for client in self.traindata:
+        client = self.traindata
+        clusters=self.clusters
+        for client_id in range(len(client)):
             minimum = 201
             closest_cluster = None
-            for cluster in self.clusters:
+            for cluster in clusters:
                 cluster.previous_members = cluster.current_members
-                if (self.euclidean_distance(client,cluster.prototype)<minimum):
-                    minimum=self.euclidean_distance(client,cluster.prototype)
+                if (self.euclidean_distance(client[client_id],cluster.prototype)<minimum):
+                    ### print('minimum')
+                    ### print(minimum)
+
+                    minimum=self.euclidean_distance(client[client_id],cluster.prototype)
                     closest_cluster=cluster
-            #closest_cluster.current_members.clear()
-            print("-------")
-            print('client')
-            print(client)
+            ### print("-------")
+            ### print('client_id')
+            ### print(client_id)
+            ### print('self.traindata[client_id]')
+            closest_cluster.current_members.add(client_id)
+            ### print(self.traindata[client_id])
+            ### print(closest_cluster.current_members)
+            ### print('closest_cluster.current_members')
 
-            closest_cluster.current_members.update(client)
 
-            print('closest_cluster.current_members')
-            print(closest_cluster.current_members)
-            # print('closest_cluster.current_members[0]')
-            # print(closest_cluster.current_members)
         # Step 3: recalculate cluster  centers
+        clusters = self.clusters
+        client = self.traindata
+        for cluster in self.clusters:
+            cluster_center = None
+            for client_id in cluster.current_members:
+                for x in client[client_id]:
+                    pass
+
         # Step 4: repeat until clustermembership stabilizes
         pass
 
