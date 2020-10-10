@@ -15,10 +15,32 @@ class Cluster:
 
 class KMeans:
     def euclidean_distance(self, X,P):
+        ## TODO COMMENTS
         for x in X:
             for p in P:
                 euc_dist = (x-p)*(x-p)
         return math.sqrt(euc_dist)
+    
+    def generate_partition(self,client, clusters):
+        ## TODO COMMENTS:
+        for client_id in range(len(client)):
+            minimum = 201
+            closest_cluster = None
+            for cluster in clusters:
+                cluster.previous_members = cluster.current_members
+                if (self.euclidean_distance(client[client_id],cluster.prototype)<minimum):
+                    ### print('minimum')
+                    ### print(minimum)
+                    minimum=self.euclidean_distance(client[client_id],cluster.prototype)
+                    closest_cluster=cluster
+            ### print("-------")
+            ### print('client_id')
+            ### print(client_id)
+            ### print('self.traindata[client_id]')
+            closest_cluster.current_members.add(client_id)
+            ### print(self.traindata[client_id])
+            ### print(closest_cluster.current_members)
+            ### print('closest_cluster.current_members')
 
 
     def __init__(self, k, traindata, testdata, dim):
@@ -44,28 +66,7 @@ class KMeans:
             cluster.prototype = [random.uniform(0, 1) for _ in range(self.dim)]
         # Step 2: Generate a new partition by assigning each datapoint to its closest cluster center
         ## comment
-        client = self.traindata
-        clusters=self.clusters
-        for client_id in range(len(client)):
-            minimum = 201
-            closest_cluster = None
-            for cluster in clusters:
-                cluster.previous_members = cluster.current_members
-                if (self.euclidean_distance(client[client_id],cluster.prototype)<minimum):
-                    ### print('minimum')
-                    ### print(minimum)
-
-                    minimum=self.euclidean_distance(client[client_id],cluster.prototype)
-                    closest_cluster=cluster
-            ### print("-------")
-            ### print('client_id')
-            ### print(client_id)
-            ### print('self.traindata[client_id]')
-            closest_cluster.current_members.add(client_id)
-            ### print(self.traindata[client_id])
-            ### print(closest_cluster.current_members)
-            ### print('closest_cluster.current_members')
-
+        self.generate_partition(self.traindata, self.clusters)
 
         # Step 3: recalculate cluster  centers
         clusters = self.clusters
