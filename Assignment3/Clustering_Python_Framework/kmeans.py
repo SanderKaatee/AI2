@@ -20,7 +20,7 @@ class KMeans:
             for p in P:
                 euc_dist = (x-p)*(x-p)
         return math.sqrt(euc_dist)
-    
+
     def generate_partition(self, client, clusters):
         ## TODO COMMENTS:
         for cluster in clusters:
@@ -32,18 +32,23 @@ class KMeans:
             closest_cluster = None
             for cluster in clusters:
                 if (self.euclidean_distance(client[client_id],cluster.prototype)<minimum):
-                    ### print('minimum')
-                    ### print(minimum)
                     minimum=self.euclidean_distance(client[client_id],cluster.prototype)
                     closest_cluster=cluster
-            ### print("-------")
-            ### print('client_id')
-            ### print(client_id)
-            ### print('self.traindata[client_id]')
             closest_cluster.current_members.add(client_id)
-            ### print(self.traindata[client_id])
-            ### print(closest_cluster.current_members)
-            ### print('closest_cluster.current_members')
+
+    def recalculate_cluster_centers(self,client, clusters):
+        for cluster in clusters:
+            number_of_members=len(cluster.current_members)
+
+            new_cluster_center =  [0.0 for _ in range(self.dim)]
+            for client_id in cluster.current_members:
+                for id in range(self.dim):
+                    new_cluster_center[id] = new_cluster_center[id] +  client[client_id][id]
+            if (number_of_members != 0):
+                for index in range(len(new_cluster_center)):
+                    new_cluster_center[index] = new_cluster_center[index]/number_of_members
+            cluster.prototype=new_cluster_center
+
 
 
     def __init__(self, k, traindata, testdata, dim):
@@ -72,14 +77,7 @@ class KMeans:
         self.generate_partition(self.traindata, self.clusters)
 
         # Step 3: recalculate cluster  centers
-        clusters = self.clusters
-        client = self.traindata
-        for cluster in self.clusters:
-            cluster_center = None
-            for client_id in cluster.current_members:
-                for x in client[client_id]:
-                    pass
-
+        self.recalculate_cluster_centers(self.traindata, self.clusters)
         # Step 4: repeat until clustermembership stabilizes
         pass
 
