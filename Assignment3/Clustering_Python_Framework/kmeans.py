@@ -15,15 +15,17 @@ class Cluster:
 
 class KMeans:
 
-    def primitives_change(self, clusters):
+    def no_primitives_change(self, clusters):
+        ## If there is a change in the clusters (previous != current), we return False
         for cluster in clusters:
-            if len(cluster.previous_members.difference(cluster.current_members)) == 0:
-                    print("RETURN TRUE")
-                    return True
-        return False
+            if cluster.previous_members != cluster.current_members:
+                return False
+        
+        ## No change found so we return true
+        return True
 
     def euclidean_distance(self, X,P):
-        ## TODO COMMENTS
+        ## Euclidian distance function, formula (1) in assignment
         euc_dist = 0
         for id in range(self.dim):
                 euc_dist = euc_dist + (X[id]-P[id])*(X[id]-P[id])
@@ -32,15 +34,15 @@ class KMeans:
     def generate_partition(self, client, clusters):
         ## Function to generate the partition, aka step 2 of the assignment
         for cluster in clusters:
-            ## Make sure our clusters are empty while making sure we know what the previous
+            ## Empty our clusters while making sure we know what the previous
             ## members were
             cluster.previous_members = cluster.current_members
             cluster.current_members.clear()
 
         ## For each client we check which is the closest cluster and then add that client to that cluster
         for client_id in range(len(client)):
-            ## Euclidian distance will be at most 1
-            minimum = 1
+            ## Euclidian distance will be at most 200
+            minimum = 200
             closest_cluster = None
             for cluster in clusters:
                 ## The prototype is the cluster center
@@ -61,6 +63,7 @@ class KMeans:
             for client_id in cluster.current_members:
                 for id in range(self.dim):
                     new_cluster_center[id] = new_cluster_center[id] + client[client_id][id]
+            
             if (number_of_members != 0):
                 for index in range(len(new_cluster_center)):
                     new_cluster_center[index] = new_cluster_center[index]/number_of_members
@@ -102,11 +105,13 @@ class KMeans:
             # Step 4: repeat until clustermembership stabilizes
 
             print(iteration)
-            if(self.primitives_change(self.clusters)):
+            if(self.no_primitives_change(self.clusters)):
                 break
+
+            ## Break the while-loop if it gets stuck
             iteration=iteration+1
-            if(iteration==100):
-                print("...and a hundred")
+            if(iteration==1000):
+                print("Something went wrong: the clusters do not stabalize")
                 break
             pass
 
