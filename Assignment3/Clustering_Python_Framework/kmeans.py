@@ -20,7 +20,7 @@ class KMeans:
         for cluster in clusters:
             if cluster.previous_members != cluster.current_members:
                 return False
-        
+
         ## No change found so we return true
         return True
 
@@ -63,7 +63,7 @@ class KMeans:
             for client_id in cluster.current_members:
                 for id in range(self.dim):
                     new_cluster_center[id] = new_cluster_center[id] + client[client_id][id]
-            
+
             if (number_of_members != 0):
                 for index in range(len(new_cluster_center)):
                     new_cluster_center[index] = new_cluster_center[index]/number_of_members
@@ -74,7 +74,6 @@ class KMeans:
     def __init__(self, k, traindata, testdata, dim):
         self.k = k
         self.traindata = traindata
-        print(self.traindata)
         self.testdata = testdata
         self.dim = dim
 
@@ -104,7 +103,6 @@ class KMeans:
 
             # Step 4: repeat until clustermembership stabilizes
 
-            print(iteration)
             if(self.no_primitives_change(self.clusters)):
                 break
 
@@ -112,7 +110,7 @@ class KMeans:
             iteration=iteration+1
             if(iteration==1000):
                 print("Something went wrong: the clusters do not stabalize")
-                break        
+                break
             pass
 
     def test(self):
@@ -133,38 +131,19 @@ class KMeans:
                         if testdata[idx] == 1:
                             requests = requests + 1
                             request = True
-                        
+
+                        # count number of requests
                         if cluster.prototype[idx] > self.prefetch_threshold:
                             prefetched_htmls = prefetched_htmls + 1
                             prefetch = True
-
+                        # count number of hits
                         if prefetch == True and request == True:
                             hits = hits + 1
-        
-        hitrate = hits / requests
-        accuracy = hits / prefetched_htmls
-        
-        print("hitrate:")
-        print(round(hitrate, 2))
-        print("accuracy:")
-        print(round(accuracy, 2))
-
-
-
-
-
-
-
-
-
-
-
-
-
-       
-        # count number of hits
-        # count number of requests
         # set the variables hitrate and accuracy to their appropriate value
+        self.hitrate = hits / requests
+        self.accuracy = hits / prefetched_htmls
+
+
         pass
 
 
