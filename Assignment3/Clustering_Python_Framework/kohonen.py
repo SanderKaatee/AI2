@@ -26,6 +26,13 @@ class Kohonen:
         self.accuracy = 0
         self.hitrate = 0
 
+    def euclidean_distance(self, X,P):
+        ## Euclidian distance function, formula (1) in assignment
+        euc_dist = 0
+        for id in range(self.dim):
+                euc_dist = euc_dist + (X[id]-P[id])*(X[id]-P[id])
+        return math.sqrt(euc_dist)
+
     def initialize_clusters(self):
         for i in range(self.n):
             for j in range(self.n):
@@ -33,13 +40,47 @@ class Kohonen:
 
         pass
     def calculate_square_size(self, epoch):
-        pass
+        size = self.n * (self.epochs - epoch) / self.epochs
+        size = math.ceil(size)
+        return size
+
     def calculate_learning_rate(self, epoch):
-        pass
+        size = self.initial_learning_rate * (self.epochs - epoch) / self.epochs
+        return size
+
     def calculate_best_matching_unit(self, client):
-        pass
-    def change_neighbourhood_nodes(self, bmu, client, sqrt_size, learning_rate):
-        pass
+        minimum = 200
+        closest_cluster_index = None
+        for i in range(self.n):
+            for j in range(self.n):
+                euc_dist = self.euclidean_distance(client,self.clusters[i][j].prototype)
+                if (euc_dist<minimum):
+                    ## Find closest cluster
+                    minimum=euc_dist
+                    closest_cluster_index= (i, j)            
+        return closest_cluster_index
+
+    def change_neighbourhood_nodes(self, bmu_index, client, sqr_size, learning_rate):
+        bmu_neugborhood_i_start = bmu_index[0] - math.floor(sqr_size/2)
+        bmu_neugborhood_i_end = bmu_index[0] + math.floor(sqr_size/2)
+        bmu_neugborhood_j_start = bmu_index[1] - math.floor(sqr_size/2)
+        bmu_neugborhood_j_end = bmu_index[1] + math.floor(sqr_size/2)
+
+        for i in range(bmu_neugborhood_i_start, bmu_neugborhood_i_end):
+            for j in range(bmu_neugborhood_j_start,bmu_neugborhood_j_end):
+                print(i)
+                print(j)
+                try:
+                    if i == bmu_index[0] and j == bmu_index[1]:
+                        print('BMU')
+                        print(bmu_index)
+                    if i<0 or j<0:
+                        print("Outside matrix")
+                except:
+                    print("Outside matrix")
+                    continue
+        
+
     def print_progress_bar(self, epoch):
         pass
 
@@ -49,14 +90,14 @@ class Kohonen:
         # Repeat 'epochs' times:
         for epoch in range(self.epochs):
         #     Step 2: Calculate the square size and the learning rate, these decrease linearly with the number of epochs.
-            sqrt_size = self.calculate_square_size(epoch)
+            sqr_size = self.calculate_square_size(epoch)
             learning_rate = self.calculate_learning_rate(epoch)
         #     Step 3: Every input vector is presented to the map (always in the same order)
         #     For each vector its Best Matching Unit is found, and :
             for client in self.traindata:
-                bmu = self.calculate_best_matching_unit(client)
+                bmu_index = self.calculate_best_matching_unit(client)
         #         Step 4: All nodes within the neighbourhood of the BMU are changed, you don't have to use distance relative learning.
-                self.change_neighbourhood_nodes(bmu, client, sqrt_size, learning_rate)
+                self.change_neighbourhood_nodes(bmu_index, client, sqr_size, learning_rate)
         # Since training kohonen maps can take quite a while, presenting the user with a progress bar would be nice
 
         self.print_progress_bar(epoch)
