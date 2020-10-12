@@ -36,8 +36,7 @@ class KMeans:
         for cluster in clusters:
             ## Empty our clusters while making sure we know what the previous
             ## members were
-            cluster.previous_members.clear()
-            cluster.previous_members.update(cluster.current_members)
+            cluster.previous_members = cluster.current_members
             cluster.current_members.clear()
 
         ## For each client we check which is the closest cluster and then add that client to that cluster
