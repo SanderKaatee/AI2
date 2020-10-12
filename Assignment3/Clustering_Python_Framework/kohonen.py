@@ -117,8 +117,9 @@ class Kohonen:
             # Since training kohonen maps can take quite a while, presenting the user with a progress bar would be nice
             self.print_progress_bar(epoch)
 
-        self.add_clients_to_clusters()
         print('\n')
+        self.add_clients_to_clusters()
+
         pass
 
     def test(self):
@@ -149,13 +150,9 @@ class Kohonen:
                             if prefetch == True and request == True:
                                 hits = hits + 1
 
-        hitrate = hits / requests
-        accuracy = hits / prefetched_htmls
+        self.hitrate = hits / requests
+        self.accuracy = hits / prefetched_htmls
 
-        print("hitrate:")
-        print(round(hitrate, 2))
-        print("accuracy:")
-        print(round(accuracy, 2))
 
         pass
 
