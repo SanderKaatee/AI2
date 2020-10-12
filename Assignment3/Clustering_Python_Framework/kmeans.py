@@ -15,12 +15,21 @@ class Cluster:
 
 class KMeans:
 
-    def primitives_change(self, clusters):
+    def no_primitives_change(self, clusters):
+        # for cluster in clusters:
+        #     if len(cluster.previous_members.difference(cluster.current_members)) == 0:
+        #             print("RETURN TRUE")
+        #             return True
+
         for cluster in clusters:
-            if len(cluster.previous_members.difference(cluster.current_members)) == 0:
-                    print("RETURN TRUE")
-                    return True
-        return False
+            print("cluster.current_members")
+            print(cluster.current_members)
+            print("cluster.previous_members")
+            print(cluster.previous_members)
+            if cluster.previous_members != cluster.current_members:
+                return False
+
+        return True
 
     def euclidean_distance(self, X,P):
         ## TODO COMMENTS
@@ -34,13 +43,14 @@ class KMeans:
         for cluster in clusters:
             ## Make sure our clusters are empty while making sure we know what the previous
             ## members were
-            cluster.previous_members = cluster.current_members
+            cluster.previous_members.clear()
+            cluster.previous_members.update(cluster.current_members)
             cluster.current_members.clear()
 
         ## For each client we check which is the closest cluster and then add that client to that cluster
         for client_id in range(len(client)):
-            ## Euclidian distance will be at most 1
-            minimum = 1
+            ## Euclidian distance will be at most 200
+            minimum = 200
             closest_cluster = None
             for cluster in clusters:
                 ## The prototype is the cluster center
@@ -102,10 +112,10 @@ class KMeans:
             # Step 4: repeat until clustermembership stabilizes
 
             print(iteration)
-            if(self.primitives_change(self.clusters)):
+            if(self.no_primitives_change(self.clusters)):
                 break
             iteration=iteration+1
-            if(iteration==100):
+            if(iteration==1000):
                 print("...and a hundred")
                 break
             pass
