@@ -16,23 +16,16 @@ class Cluster:
 class KMeans:
 
     def no_primitives_change(self, clusters):
-        # for cluster in clusters:
-        #     if len(cluster.previous_members.difference(cluster.current_members)) == 0:
-        #             print("RETURN TRUE")
-        #             return True
-
+        ## If there is a change in the clusters (previous != current), we return False
         for cluster in clusters:
-            print("cluster.current_members")
-            print(cluster.current_members)
-            print("cluster.previous_members")
-            print(cluster.previous_members)
             if cluster.previous_members != cluster.current_members:
                 return False
-
+        
+        ## No change found so we return true
         return True
 
     def euclidean_distance(self, X,P):
-        ## TODO COMMENTS
+        ## Euclidian distance function, formula (1) in assignment
         euc_dist = 0
         for id in range(self.dim):
                 euc_dist = euc_dist + (X[id]-P[id])*(X[id]-P[id])
@@ -41,7 +34,7 @@ class KMeans:
     def generate_partition(self, client, clusters):
         ## Function to generate the partition, aka step 2 of the assignment
         for cluster in clusters:
-            ## Make sure our clusters are empty while making sure we know what the previous
+            ## Empty our clusters while making sure we know what the previous
             ## members were
             cluster.previous_members.clear()
             cluster.previous_members.update(cluster.current_members)
@@ -71,6 +64,7 @@ class KMeans:
             for client_id in cluster.current_members:
                 for id in range(self.dim):
                     new_cluster_center[id] = new_cluster_center[id] + client[client_id][id]
+            
             if (number_of_members != 0):
                 for index in range(len(new_cluster_center)):
                     new_cluster_center[index] = new_cluster_center[index]/number_of_members
@@ -114,9 +108,11 @@ class KMeans:
             print(iteration)
             if(self.no_primitives_change(self.clusters)):
                 break
+
+            ## Break the while-loop if it gets stuck
             iteration=iteration+1
             if(iteration==1000):
-                print("...and a hundred")
+                print("Something went wrong: the clusters do not stabalize")
                 break
             pass
 
