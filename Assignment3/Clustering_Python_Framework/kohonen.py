@@ -149,7 +149,6 @@ class Kohonen:
                             if prefetch == True and request == True:
                                 hits = hits + 1
         
-        print(hits)
         hitrate = hits / requests
         accuracy = hits / prefetched_htmls
         
