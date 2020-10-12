@@ -15,11 +15,21 @@ class Cluster:
 
 class KMeans:
 
-    def primitives_change(self, clusters):
+    def no_primitives_change(self, clusters):
+        # for cluster in clusters:
+        #     if len(cluster.previous_members.difference(cluster.current_members)) == 0:
+        #             print("RETURN TRUE")
+        #             return True
+
         for cluster in clusters:
+            print("cluster.current_members")
+            print(cluster.current_members)
+            print("cluster.previous_members")
+            print(cluster.previous_members)
             if cluster.previous_members != cluster.current_members:
-                    return True
-        return False
+                return False
+
+        return True
 
     def euclidean_distance(self, X,P):
         ## TODO COMMENTS
@@ -39,10 +49,9 @@ class KMeans:
 
         ## For each client we check which is the closest cluster and then add that client to that cluster
         for client_id in range(len(client)):
-            ## Euclidian distance will be at most 1
-            minimum = 201
-            closest_cluster_id = 0
-            cluster_id=0
+            ## Euclidian distance will be at most 200
+            minimum = 200
+            closest_cluster = None
             for cluster in clusters:
                 ## The prototype is the cluster center
                 euc_dist = self.euclidean_distance(client[client_id],cluster.prototype)
@@ -106,12 +115,17 @@ class KMeans:
             self.recalculate_cluster_centers(self.traindata, self.clusters)
 
             # Step 4: repeat until clustermembership stabilizes
-            if(not self.primitives_change(self.clusters)):
+
+            print(iteration)
+            if(self.no_primitives_change(self.clusters)):
                 break
 
             if iteration==25:
                  break
             iteration=iteration+1
+            if(iteration==1000):
+                print("...and a hundred")
+                break
             pass
 
     def test(self):
