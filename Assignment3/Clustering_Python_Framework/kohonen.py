@@ -62,11 +62,11 @@ class Kohonen:
                 if (euc_dist<minimum):
                     ## Find closest cluster
                     minimum=euc_dist
-                    closest_cluster_index= (i, j)            
+                    closest_cluster_index= (i, j)
         return closest_cluster_index
 
     def change_neighbourhood_nodes(self, bmu_index, client, sqr_size, learning_rate):
-        ## Change the neighbourhood nodes (including the BMU) towards the client 
+        ## Change the neighbourhood nodes (including the BMU) towards the client
         bmu_neugborhood_i_start = bmu_index[0] - math.floor(sqr_size/2)
         bmu_neugborhood_i_end = bmu_index[0] + math.floor(sqr_size/2)
         bmu_neugborhood_j_start = bmu_index[1] - math.floor(sqr_size/2)
@@ -81,24 +81,24 @@ class Kohonen:
 
                 except:
                     continue
-        
+
     def add_clients_to_clusters(self):
         ## Add client to closest cluster
         clients = self.traindata
         for client_index in range(len(clients)):
             closest_cluster_index = self.calculate_best_matching_unit(clients[client_index])
             self.clusters[closest_cluster_index[0]][closest_cluster_index[1]].current_members.add(client_index)
-           
+
 
     def print_progress_bar(self, epoch):
         ## Print a progressbar
-        p=str(round((epoch+1)/self.epochs*100,2))+"%" 
-       
+        p=str(round((epoch+1)/self.epochs*100,2))+"%"
+
         sys.stdout.write('\r'+p)
 
         pass
 
-    
+
     def train(self):
         # Step 1: initialize map with random vectors (A good place to do this, is in the initialisation of the clusters)
         self.initialize_clusters()
@@ -117,8 +117,8 @@ class Kohonen:
             # Since training kohonen maps can take quite a while, presenting the user with a progress bar would be nice
             self.print_progress_bar(epoch)
 
-        self.add_clients_to_clusters()       
-        print('\n') 
+        self.add_clients_to_clusters()
+        print('\n')
         pass
 
     def test(self):
@@ -141,18 +141,17 @@ class Kohonen:
                             if testdata[idx] == 1:
                                 requests = requests + 1
                                 request = True
-                            
+
                             if cluster.prototype[idx] > self.prefetch_threshold:
                                 prefetched_htmls = prefetched_htmls + 1
                                 prefetch = True
 
                             if prefetch == True and request == True:
                                 hits = hits + 1
-        
-        print(hits)
+
         hitrate = hits / requests
         accuracy = hits / prefetched_htmls
-        
+
         print("hitrate:")
         print(round(hitrate, 2))
         print("accuracy:")
