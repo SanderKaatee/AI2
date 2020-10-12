@@ -35,21 +35,25 @@ class Kohonen:
         return math.sqrt(euc_dist)
 
     def initialize_clusters(self):
+        ## Initialize the clusters with random prototypes
         for i in range(self.n):
             for j in range(self.n):
                 self.clusters[i][j].prototype = [random.uniform(0, 1) for _ in range(self.dim)]
 
         pass
     def calculate_square_size(self, epoch):
+        ## Formula (3) in the assignment
         size = (self.n / 2) * (1 - (epoch / self.epochs))
         size = math.ceil(size)
         return size
 
     def calculate_learning_rate(self, epoch):
+        ## Formula (4) in the assignment
         rate = self.initial_learning_rate * (1 - (epoch / self.epochs))
         return rate
 
     def calculate_best_matching_unit(self, client):
+        ## Function to find the BMU of the client
         minimum = 200
         closest_cluster_index = None
         for i in range(self.n):
@@ -62,6 +66,7 @@ class Kohonen:
         return closest_cluster_index
 
     def change_neighbourhood_nodes(self, bmu_index, client, sqr_size, learning_rate):
+        ## Change the neighbourhood nodes (including the BMU) towards the client 
         bmu_neugborhood_i_start = bmu_index[0] - math.floor(sqr_size/2)
         bmu_neugborhood_i_end = bmu_index[0] + math.floor(sqr_size/2)
         bmu_neugborhood_j_start = bmu_index[1] - math.floor(sqr_size/2)
@@ -71,12 +76,14 @@ class Kohonen:
             for j in range(bmu_neugborhood_j_start,bmu_neugborhood_j_end):
                 try:
                     for idx in range(self.dim):
+                        ## Formula (2) in the assignment:
                         self.clusters[i][j].prototype[idx] = (1-learning_rate)*self.clusters[i][j].prototype[idx] + learning_rate * client[idx]
 
                 except:
                     continue
         
     def add_clients_to_clusters(self):
+        ## Add client to closest cluster
         clients = self.traindata
         for client_index in range(len(clients)):
             closest_cluster_index = self.calculate_best_matching_unit(clients[client_index])
@@ -84,6 +91,7 @@ class Kohonen:
            
 
     def print_progress_bar(self, epoch):
+        ## Print a progressbar
         p=str(round((epoch+1)/self.epochs*100,2))+"%" 
        
         sys.stdout.write('\r'+p)
