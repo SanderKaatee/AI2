@@ -1,5 +1,6 @@
 import random
 import math
+import sys
 
 class Cluster:
     """This class represents the clusters, it contains the
@@ -40,13 +41,13 @@ class Kohonen:
 
         pass
     def calculate_square_size(self, epoch):
-        size = self.n * (self.epochs - epoch) / self.epochs
+        size = (self.n / 2) * (1 - (epoch / self.epochs))
         size = math.ceil(size)
         return size
 
     def calculate_learning_rate(self, epoch):
-        size = self.initial_learning_rate * (self.epochs - epoch) / self.epochs
-        return size
+        rate = self.initial_learning_rate * (1 - (epoch / self.epochs))
+        return rate
 
     def calculate_best_matching_unit(self, client):
         minimum = 200
@@ -68,22 +69,28 @@ class Kohonen:
 
         for i in range(bmu_neugborhood_i_start, bmu_neugborhood_i_end):
             for j in range(bmu_neugborhood_j_start,bmu_neugborhood_j_end):
-                print(i)
-                print(j)
                 try:
-                    if i == bmu_index[0] and j == bmu_index[1]:
-                        print('BMU')
-                        print(bmu_index)
-                    if i<0 or j<0:
-                        print("Outside matrix")
+                    for idx in range(self.dim):
+                        self.clusters[i][j].prototype[idx] = (1-learning_rate)*self.clusters[i][j].prototype[idx] + learning_rate * client[idx]
+
                 except:
-                    print("Outside matrix")
                     continue
         
+    def add_clients_to_clusters(self):
+        clients = self.traindata
+        for client_index in range(len(clients)):
+            closest_cluster_index = self.calculate_best_matching_unit(clients[client_index])
+            self.clusters[closest_cluster_index[0]][closest_cluster_index[1]].current_members.add(client_index)
+           
 
     def print_progress_bar(self, epoch):
+        p=str(round((epoch+1)/self.epochs*100,2))+"%" 
+       
+        sys.stdout.write('\r'+p)
+
         pass
 
+    
     def train(self):
         # Step 1: initialize map with random vectors (A good place to do this, is in the initialisation of the clusters)
         self.initialize_clusters()
@@ -98,21 +105,51 @@ class Kohonen:
                 bmu_index = self.calculate_best_matching_unit(client)
         #         Step 4: All nodes within the neighbourhood of the BMU are changed, you don't have to use distance relative learning.
                 self.change_neighbourhood_nodes(bmu_index, client, sqr_size, learning_rate)
-        # Since training kohonen maps can take quite a while, presenting the user with a progress bar would be nice
 
-        self.print_progress_bar(epoch)
-        print(epoch)
+            # Since training kohonen maps can take quite a while, presenting the user with a progress bar would be nice
+            self.print_progress_bar(epoch)
+
+        self.add_clients_to_clusters()       
+        print('\n') 
         pass
 
     def test(self):
-        # iterate along all clients
+        prefetched_htmls = 0
+        hits = 0
+        requests = 0
         # for each client find the cluster of which it is a member
-        # get the actual test data (the vector) of this client
-        # iterate along all dimensions
-        # and count prefetched htmls
-        # count number of hits
-        # count number of requests
-        # set the global variables hitrate and accuracy to their appropriate value
+        for client_id in range(len(self.traindata)):
+            for i in range(self.n):
+                for j in range(self.n):
+                    cluster = self.clusters[i][j]
+                    if client_id in cluster.current_members:
+                        # get the actual testData (the vector) of this client
+                        testdata = self.testdata[client_id]
+                        # iterate along all dimensions
+                        for idx in range(self.dim):
+                            prefetch = False
+                            request = False
+                            # and count prefetched htmls
+                            if testdata[idx] == 1:
+                                requests = requests + 1
+                                request = True
+                            
+                            if cluster.prototype[idx] > self.prefetch_threshold:
+                                prefetched_htmls = prefetched_htmls + 1
+                                prefetch = True
+
+                            if prefetch == True and request == True:
+                                hits = hits + 1
+        
+        print(hits)
+        hitrate = hits / requests
+        accuracy = hits / prefetched_htmls
+        
+        print("hitrate:")
+        print(round(hitrate, 2))
+        print("accuracy:")
+        print(round(accuracy, 2))
+
         pass
 
     def print_test(self):

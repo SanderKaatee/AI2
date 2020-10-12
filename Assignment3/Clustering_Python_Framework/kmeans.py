@@ -27,8 +27,8 @@ class KMeans:
     def euclidean_distance(self, X,P):
         ## Euclidian distance function, formula (1) in assignment
         euc_dist = 0
-        for id in range(self.dim):
-                euc_dist = euc_dist + (X[id]-P[id])*(X[id]-P[id])
+        for idx in range(self.dim):
+                euc_dist = euc_dist + (X[idx]-P[idx])*(X[idx]-P[idx])
         return math.sqrt(euc_dist)
 
     def generate_partition(self, client, clusters):
@@ -112,15 +112,57 @@ class KMeans:
             iteration=iteration+1
             if(iteration==1000):
                 print("Something went wrong: the clusters do not stabalize")
-                break
+                break        
             pass
 
     def test(self):
-        # iterate along all clients. Assumption: the same clients are in the same order as in the testData
+        prefetched_htmls = 0
+        hits = 0
+        requests = 0
         # for each client find the cluster of which it is a member
-        # get the actual testData (the vector) of this client
-        # iterate along all dimensions
-        # and count prefetched htmls
+        for client_id in range(len(self.traindata)):
+            for cluster in self.clusters:
+                if client_id in cluster.current_members:
+                    # get the actual testData (the vector) of this client
+                    testdata = self.testdata[client_id]
+                    # iterate along all dimensions
+                    for idx in range(self.dim):
+                        prefetch = False
+                        request = False
+                        # and count prefetched htmls
+                        if testdata[idx] == 1:
+                            requests = requests + 1
+                            request = True
+                        
+                        if cluster.prototype[idx] > self.prefetch_threshold:
+                            prefetched_htmls = prefetched_htmls + 1
+                            prefetch = True
+
+                        if prefetch == True and request == True:
+                            hits = hits + 1
+        
+        print(hits)
+        hitrate = hits / requests
+        accuracy = hits / prefetched_htmls
+        
+        print("hitrate:")
+        print(round(hitrate, 2))
+        print("accuracy:")
+        print(round(accuracy, 2))
+
+
+
+
+
+
+
+
+
+
+
+
+
+       
         # count number of hits
         # count number of requests
         # set the variables hitrate and accuracy to their appropriate value
