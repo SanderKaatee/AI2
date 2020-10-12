@@ -58,7 +58,6 @@ class Kohonen:
                 print()
 
     def print_prototypes(self):
-        np.set_printoptions(precision=4)
         for i in range(self.n):
             for j in range(self.n):
                print("Prototype cluster["+str(i)+"]["+str(j)+"] :", self.clusters[i][j].prototype)
