@@ -2,8 +2,9 @@
 
 import random
 import numpy
-from problem_utils import *
+import time
 
+from problem_utils import *
 class State :
 
     def __init__(self) :
@@ -31,8 +32,8 @@ class State :
 class Map :
     def __init__(self) :
         self.states = {}
-        self.stop_crit = 0.000001
-        self.gamma = 0.8
+        self.stop_crit = 0.001
+        self.gamma = 0.5
         self.n_rows = 0
         self.n_cols = 0
 
@@ -274,15 +275,43 @@ def make2DProblem() :
             (0.1, m.states[filterState(s[0], getSuccessor(s[0], right(a)))])]
 
     return m
-
+####Main function added with usefull printouts
 def main():
+
+    #RN value iteration
+    print('RN value iteration')
+    start = time.time()
     m1 = makeRNProblem()
     m1.valueIteration()
     m1.printValues()
+    m1.printActions()
+    end = time.time()
+    print("time taken: ", end-start)
+    #RN Policy iteration
+    print('RN Policy iteration')
+    start = time.time()
     m2 = makeRNProblem()
     m2.policyIteration()
     m2.printActions()
-
+    end = time.time()
+    print("time taken: ", end-start)
+    #2D value iteration
+    print('2D value iteration')
+    start = time.time()
+    m1_1 = make2DProblem()
+    m1_1.valueIteration()
+    m1_1.printValues()
+    m1_1.printActions()
+    end = time.time()
+    print("time taken: ", end-start)
+    #2D Policy iteration
+    print('2D Policy iteration')
+    start = time.time()
+    m2_1 = make2DProblem()
+    m2_1.policyIteration()
+    m2_1.printActions()
+    end = time.time()
+    print("time taken: ", end-start)
 
 if __name__ == "__main__":
     main()
