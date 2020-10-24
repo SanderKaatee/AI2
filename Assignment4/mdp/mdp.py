@@ -31,32 +31,54 @@ class State :
 class Map :
     def __init__(self) :
         self.states = {}
-        self.stop_crit = 0.01
+        self.stop_crit = 0.00001
         self.gamma = 0.8
         self.n_rows = 0
         self.n_cols = 0
-    
+
     class PrintType :
         ACTIONS = 0
         VALUES = 1
 
     ### you write this method
     def valueIteration(self) :
+
+        epoch = 0
         ### 1. initialize utilities to 0
+        for state in self.states.values():
+            if state.isGoal==False:
+                state.utility = 0
         ### 2. repeat value iteration loop until largest change is smaller than
         ###    stop criterion
-        
+
+        while True:
+            changes = numpy.array([])
+            for state in self.states.values():
+                if state.isGoal==False:
+                    oldUtility = state.utility
+                    newUtility = state.reward + self.gamma*state.computeEU(state.selectBestAction())
+                    changes = numpy.append(changes, [oldUtility-newUtility])
+                    state.utility = newUtility
+            #if abs(max(changes))<self.stop_crit:
+            if epoch ==25:
+                break
+            print(abs(max(changes)))
+        #    print(epoch)
+            epoch=epoch+1
+
+
+
         pass #placeholder, delete when implementing
-        
-        
+
+
 
     ### you write this method
     def policyIteration(self) :
         ### 1. initialize random policy
         ### 2 repeat policy iteration loop until policy is stable
-    
+
         pass #placeholder, delete when implementing
-    
+
     def calculateUtilitiesLinear(self) :
         n_states = len(self.states)
         coeffs = numpy.zeros((n_states, n_states))
@@ -74,13 +96,13 @@ class Map :
         for s in self.states.values() :
             if not s.isGoal :
                 s.utility = solution[s.id, 0]
-    
+
     def printActions(self) :
         self.printMaze(self.PrintType.ACTIONS)
 
     def printValues(self) :
         self.printMaze(self.PrintType.VALUES)
-    
+
     def printMaze(self, print_type) :
         to_print = ":"
         for c in range(self.n_cols) :
@@ -134,7 +156,7 @@ def makeRNProblem() :
     rows = 3
 
     def filterState(oldState, newState) :
-        if (newState[0] < 0 or newState[1] < 0 or newState[0] > cols - 1  or 
+        if (newState[0] < 0 or newState[1] < 0 or newState[0] > cols - 1  or
             newState[1] > rows - 1 or newState in walls) :
             return oldState
         else :
@@ -151,7 +173,7 @@ def makeRNProblem() :
             m.states[(i,j)].actions = actions
             m.states[(i,j)].id = j * m.n_cols + i
             m.states[(i,j)].reward = -0.04
-                    
+
     m.states[(3,0)].isGoal = True
     m.states[(3,1)].isGoal = True
 
@@ -170,25 +192,25 @@ def makeRNProblem() :
     for s in m.states.items() :
         for a in actions :
             s[1].transitions[a] = [\
-            (0.8, m.states[filterState(s[0], getSuccessor(s[0],a))]),  
+            (0.8, m.states[filterState(s[0], getSuccessor(s[0],a))]),
             (0.1, m.states[filterState(s[0],getSuccessor(s[0], left(a)))]),
             (0.1, m.states[filterState(s[0], getSuccessor(s[0], right(a)))])]
     return m
 
 def make2DProblem() :
     """
-    Creates the larger maze described in the exercise. Utilizes functions 
+    Creates the larger maze described in the exercise. Utilizes functions
     defined in the problem_utils module.
     """
 
     walls = [(1,1), (4,1), (5,1), (6,1),(7,1),(1,2), (7,2), (1,3), (5,3),
-             (7,3), (1,4), (5,4), (7,4), (1,5), (5,5), (7,5), (1,6), (5,6), 
-             (7,6), (1,7), (5,7), (7,7), (1,8), (3,8), (4,8), (5,8), 
+             (7,3), (1,4), (5,4), (7,4), (1,5), (5,5), (7,5), (1,6), (5,6),
+             (7,6), (1,7), (5,7), (7,7), (1,8), (3,8), (4,8), (5,8),
              (7,8), (1,9)]
     actions = ['left', 'right','up','down']
 
     def filterState(oldState, newState) :
-        if (newState[0] < 0 or newState[1] < 0 or newState[0] > 9 or 
+        if (newState[0] < 0 or newState[1] < 0 or newState[0] > 9 or
             newState[1] > 9 or newState in walls) :
             return oldState
         else :
@@ -205,7 +227,7 @@ def make2DProblem() :
             m.states[(i,j)].actions = actions
             m.states[(i,j)].id = j * 10 + i
             m.states[(i,j)].reward = -0.04
-                    
+
     m.states[(0,9)].isGoal = True
     m.states[(9,9)].isGoal = True
     m.states[(9,0)].isGoal = True
@@ -228,8 +250,8 @@ def make2DProblem() :
     for s in m.states.items() :
         for a in actions :
             s[1].transitions[a] = [\
-            (0.7, m.states[filterState(s[0], getSuccessor(s[0],a))]),  
-            (0.1, m.states[filterState(s[0], getSuccessor(s[0], opposite(a)))]), 
+            (0.7, m.states[filterState(s[0], getSuccessor(s[0],a))]),
+            (0.1, m.states[filterState(s[0], getSuccessor(s[0], opposite(a)))]),
             (0.1, m.states[filterState(s[0],getSuccessor(s[0], left(a)))]),
             (0.1, m.states[filterState(s[0], getSuccessor(s[0], right(a)))])]
 
