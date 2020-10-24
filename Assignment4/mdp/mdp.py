@@ -31,7 +31,7 @@ class State :
 class Map :
     def __init__(self) :
         self.states = {}
-        self.stop_crit = 0.00001
+        self.stop_crit = 0.001
         self.gamma = 0.8
         self.n_rows = 0
         self.n_cols = 0
@@ -40,10 +40,10 @@ class Map :
         ACTIONS = 0
         VALUES = 1
 
-    ### you write this method
+    ## you write this method
     def valueIteration(self) :
-
         epoch = 0
+
         ### 1. initialize utilities to 0
         for state in self.states.values():
             if state.isGoal==False:
@@ -59,12 +59,41 @@ class Map :
                     newUtility = state.reward + self.gamma*state.computeEU(state.selectBestAction())
                     changes = numpy.append(changes, [oldUtility-newUtility])
                     state.utility = newUtility
-            #if abs(max(changes))<self.stop_crit:
-            if epoch ==25:
+            ###    stop criterion
+            if abs(max(changes))<self.stop_crit:
+            #if epoch ==25:
                 break
             print(abs(max(changes)))
         #    print(epoch)
             epoch=epoch+1
+    ### you write this method
+    def valueIteration(self) :
+        ### Declare intitial values
+        epoch = 0
+        maxChangeStates=None;
+
+        ### 1. initialize utilities to 0
+        for state in self.states.values():
+           if state.isGoal == False :
+             state.utility=0
+        ### 2. repeat value iteration loop until largest change is smaller than
+        while True:
+          change = numpy.array([])
+          for state in self.states.values():
+            ### For every non-goal state compute the best action and it's utility
+            if state.isGoal == False :
+              oldUtility=state.utility
+              utilBestAction = state.computeEU(state.selectBestAction())
+              newUtility = state.reward + self.gamma *utilBestAction
+              change = numpy.append(change, [oldUtility-newUtility])
+              state.utility=newUtility
+          ### Create an array with the changes of every state
+          maxChangeStates=abs(max(change))
+          ### Stop criterion
+          epoch = epoch + 1
+          if(self.stop_crit > maxChangeStates):
+                print(epoch)
+                break
 
 
 
