@@ -31,7 +31,7 @@ class State :
 class Map :
     def __init__(self) :
         self.states = {}
-        self.stop_crit = 0.001
+        self.stop_crit = 0.000001
         self.gamma = 0.8
         self.n_rows = 0
         self.n_cols = 0
@@ -43,70 +43,57 @@ class Map :
     ## you write this method
     def valueIteration(self) :
         epoch = 0
-
         ### 1. initialize utilities to 0
+        #### This action is not neeeded but is coded for completeness
         for state in self.states.values():
             if state.isGoal==False:
                 state.utility = 0
         ### 2. repeat value iteration loop until largest change is smaller than
         ###    stop criterion
-
         while True:
+            ####add all the changes in an array
             changes = numpy.array([])
+            #### loop trough all the states
             for state in self.states.values():
+            #### If the state is not a goal we try find a better utility for that state
                 if state.isGoal==False:
                     oldUtility = state.utility
                     newUtility = state.reward + self.gamma*state.computeEU(state.selectBestAction())
                     changes = numpy.append(changes, [oldUtility-newUtility])
                     state.utility = newUtility
             ###    stop criterion
+            #### If the absolute maximum change in the array of changes is less than the stop criterion
+            #### we terminate the program
             if abs(max(changes))<self.stop_crit:
-            #if epoch ==25:
+                print("Epochs needed:  ",epoch)
                 break
-            print(abs(max(changes)))
-        #    print(epoch)
             epoch=epoch+1
-    ### you write this method
-    def valueIteration(self) :
-        ### Declare intitial values
-        epoch = 0
-        maxChangeStates=None;
-
-        ### 1. initialize utilities to 0
-        for state in self.states.values():
-           if state.isGoal == False :
-             state.utility=0
-        ### 2. repeat value iteration loop until largest change is smaller than
-        while True:
-          change = numpy.array([])
-          for state in self.states.values():
-            ### For every non-goal state compute the best action and it's utility
-            if state.isGoal == False :
-              oldUtility=state.utility
-              utilBestAction = state.computeEU(state.selectBestAction())
-              newUtility = state.reward + self.gamma *utilBestAction
-              change = numpy.append(change, [oldUtility-newUtility])
-              state.utility=newUtility
-          ### Create an array with the changes of every state
-          maxChangeStates=abs(max(change))
-          ### Stop criterion
-          epoch = epoch + 1
-          if(self.stop_crit > maxChangeStates):
-                print(epoch)
-                break
-
-
-
-        pass #placeholder, delete when implementing
-
 
 
     ### you write this method
     def policyIteration(self) :
+        epoch = 0
         ### 1. initialize random policy
+        for state in self.states.values():
+            randomAction = numpy.random.randint(len(state.actions))
+            state.policy = state.actions[randomAction]
         ### 2 repeat policy iteration loop until policy is stable
+        while True:
+            unchanged = True
+            #### We calculates the utilites of the states
+            self.calculateUtilitiesLinear()
 
-        pass #placeholder, delete when implementing
+            for state in self.states.values():
+                #### We search for a better action at a state than the current policy at that state
+                bestAction = state.selectBestAction()
+                if not state.policy == bestAction:
+                    state.policy = bestAction
+                    unchanged = False
+            #### If after itterating though al state there is no change we terminate the algorithm
+            if unchanged == True:
+                print("Epochs needed:  ",epoch)
+                break
+            epoch=epoch+1
 
     def calculateUtilitiesLinear(self) :
         n_states = len(self.states)
@@ -121,7 +108,9 @@ class Map :
                 for p in probs :
                     col = p[1].id
                     coeffs[row,col] += -self.gamma * p[0]
-        solution, _, _, _ = numpy.linalg.lstsq(coeffs, ordinate)
+
+        solution, _, _, _ = numpy.linalg.lstsq(coeffs, ordinate, rcond=None)
+
         for s in self.states.values() :
             if not s.isGoal :
                 s.utility = solution[s.id, 0]
