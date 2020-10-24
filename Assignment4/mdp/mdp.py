@@ -234,3 +234,15 @@ def make2DProblem() :
             (0.1, m.states[filterState(s[0], getSuccessor(s[0], right(a)))])]
 
     return m
+
+def main():
+    m1 = makeRNProblem()
+    m1.valueIteration()
+    m1.printValues()
+    m2 = makeRNProblem()
+    m2.policyIteration()
+    m2.printActions()
+
+
+if __name__ == "__main__":
+    main()
